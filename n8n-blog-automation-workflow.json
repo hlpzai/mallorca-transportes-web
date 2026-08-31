@@ -24,7 +24,7 @@
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "// =========================================================================\n// EDIT THIS BLOCK with your own values before turning the workflow on.\n// =========================================================================\nconst CONFIG = {\n  // GitHub repo where the site lives (must already contain website/index.html,\n  // website/blog/index.html and website/sitemap.xml at basePath below)\n  githubOwner: 'YOUR_GITHUB_USERNAME',\n  githubRepo: 'YOUR_REPO_NAME',\n  githubBranch: 'main',\n  // '' if index.html/blog/sitemap.xml sit at the repo root, otherwise the\n  // folder prefix, e.g. 'website/' (note the trailing slash)\n  basePath: 'website/',\n\n  siteUrl: 'https://mallorcatransportes.com',\n  companyName: 'Mallorca Transportes',\n  companyPhone: '+34 659 924 515',\n  companyEmail: 'info@mallorcatransportes.com',\n\n  // Any OpenAI chat-completions model that supports response_format json_object\n  openaiModel: 'gpt-4.1',\n};\n\n// -------------------------------------------------------------------------\n// Rotating topic queue. The workflow picks ONE per run based on the ISO\n// week number, so it never repeats until it has cycled through the whole\n// list. Add, remove or reorder rows any time — no other node needs to\n// change. When you run out of ideas, just append more.\n// -------------------------------------------------------------------------\nconst TOPICS = [\n  { topic: 'Mudanzas de estudiantes en Palma: qué necesitas saber', keywords: 'mudanzas estudiantes Palma, mudanza piso compartido Mallorca' },\n  { topic: 'Transporte de electrodomésticos grandes en Mallorca: nevera, lavadora y horno', keywords: 'transporte electrodomésticos Mallorca, transporte nevera Mallorca' },\n  { topic: 'Mudanzas en Sóller y la Serra de Tramuntana: accesos y particularidades', keywords: 'mudanzas Sóller, transporte Serra de Tramuntana' },\n  { topic: 'Cómo transportar un piano de forma segura en Mallorca', keywords: 'transporte de pianos Mallorca, mudanza de piano' },\n  { topic: 'Guardamuebles en Mallorca: cuándo tiene sentido y cómo funciona', keywords: 'guardamuebles Mallorca, trastero mudanza Mallorca' },\n  { topic: 'Mudanzas de última hora en Mallorca: qué esperar y cómo organizarte', keywords: 'mudanza urgente Mallorca, mudanza última hora' },\n  { topic: 'Transporte de obras de arte y antigüedades en Mallorca', keywords: 'transporte de arte Mallorca, transporte antigüedades Mallorca' },\n  { topic: 'Mudanzas de temporada alta en Mallorca: julio y agosto', keywords: 'mudanzas verano Mallorca, mejor época para mudarse Mallorca' },\n  { topic: 'Cómo elegir empresa de mudanzas en Mallorca sin sorpresas', keywords: 'elegir empresa de mudanzas Mallorca, presupuesto mudanza Mallorca' },\n  { topic: 'Mudanzas de negocios de hostelería en Mallorca: bares y restaurantes', keywords: 'mudanza restaurante Mallorca, transporte hostelería Mallorca' },\n  { topic: 'Transporte de maquinaria ligera y herramientas de trabajo en Mallorca', keywords: 'transporte de maquinaria Mallorca, transporte herramientas de trabajo' },\n  { topic: 'Mudanzas en Manacor y la comarca de Llevant', keywords: 'mudanzas Manacor, transporte Llevant Mallorca' },\n  { topic: 'Seguro de transporte en las mudanzas: qué cubre realmente', keywords: 'seguro de mudanza Mallorca, transporte asegurado muebles' },\n  { topic: 'Mudanzas en Inca y el Raiguer: accesos y horarios recomendados', keywords: 'mudanzas Inca, transporte Raiguer Mallorca' },\n  { topic: 'Cómo embalar la vajilla y objetos frágiles para una mudanza', keywords: 'embalar vajilla mudanza, embalaje frágiles Mallorca' },\n  { topic: 'Mudanzas en Alcúdia y Pollença: zonas turísticas y temporada', keywords: 'mudanzas Alcúdia, mudanzas Pollença' },\n  { topic: 'Transporte de gimnasios y equipamiento deportivo en Mallorca', keywords: 'transporte equipamiento deportivo Mallorca, mudanza gimnasio' },\n  { topic: 'Mudanzas en Calvià y la Costa de Ponent: viviendas de temporada', keywords: 'mudanzas Calvià, transporte Costa de Ponent' },\n  { topic: 'Cómo reducir el plástico y el cartón en tu mudanza en Mallorca', keywords: 'mudanza sostenible Mallorca, embalaje ecológico mudanza' },\n  { topic: 'Transporte de mobiliario de jardín y exterior en Mallorca', keywords: 'transporte muebles de jardín Mallorca, mudanza mobiliario exterior' },\n  { topic: 'Mudanzas en Llucmajor y Campos: zona sur de Mallorca', keywords: 'mudanzas Llucmajor, mudanzas Campos Mallorca' },\n  { topic: 'Qué hacer si tu mudanza en Mallorca coincide con obras o reforma', keywords: 'mudanza y reforma a la vez Mallorca, coordinar mudanza obra' },\n  { topic: 'Transporte de bicicletas y equipamiento náutico en Mallorca', keywords: 'transporte de bicicletas Mallorca, transporte equipo náutico' },\n  { topic: 'Mudanzas en Felanitx y Migjorn: qué tener en cuenta', keywords: 'mudanzas Felanitx, transporte Migjorn Mallorca' },\n];\n\n// -------------------------------------------------------------------------\n// Rotating hero-image pool (reuses real photos already on the site so every\n// post looks on-brand — no image generation needed).\n// -------------------------------------------------------------------------\nconst IMAGES = [\n  { file: 'trabajo-mudanza-01.jpg', alt: 'Mudanza de vivienda con cajas embaladas en Mallorca' },\n  { file: 'trabajo-mudanza-02.jpg', alt: 'Embalaje profesional de electrodomésticos para mudanza en Mallorca' },\n  { file: 'trabajo-mudanza-03.jpg', alt: 'Transporte de muebles protegidos en Mallorca' },\n  { file: 'trabajo-mudanza-04.jpg', alt: 'Desmontaje y embalaje de mobiliario en mudanza de Mallorca' },\n  { file: 'trabajo-mudanza-05.jpg', alt: 'Instalación de mobiliario tras mudanza en Mallorca' },\n  { file: 'trabajo-mudanza-06.jpg', alt: 'Montaje de mobiliario de madera en Mallorca' },\n  { file: 'equipo-mudanzas-mallorca.jpg', alt: 'Equipo de Mallorca Transportes cargando una furgoneta' },\n  { file: 'camion-transporte-mallorca.jpg', alt: 'Camión de Mallorca Transportes para transporte de muebles' },\n];\n\nfunction isoWeekNumber(date) {\n  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));\n  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));\n  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));\n  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);\n}\n\nconst now = new Date();\nconst weekNumber = isoWeekNumber(now);\nconst chosenTopic = TOPICS[weekNumber % TOPICS.length];\nconst chosenImage = IMAGES[weekNumber % IMAGES.length];\n\nconst systemPrompt = `Eres un redactor SEO experto en el sector de mudanzas y transporte en Mallorca, escribiendo para la empresa ${CONFIG.companyName}.\nEscribes en español de España, tono cercano y profesional, sin exagerar ni prometer cosas que no se puedan garantizar.\nOptimizas el contenido tanto para buscadores tradicionales (SEO) como para que motores de IA tipo ChatGPT, Perplexity o Google AI Overviews puedan citarlo con facilidad (GEO): frases claras y autocontenidas, datos concretos, listas, y una sección final de preguntas frecuentes con respuestas directas de 1-2 frases.\nNo inventes datos de la empresa que no se te den (precios exactos, número de empleados, premios, cifras de clientes, testimonios).\nDevuelve SIEMPRE un único objeto JSON válido, sin texto fuera del JSON, con exactamente estas claves:\n- title (string, atractivo y con la palabra clave principal, sin comillas)\n- slug (string, en minúsculas, separado por guiones, sin acentos ni caracteres especiales)\n- meta_description (string, máx. 155 caracteres)\n- tags (array de exactamente 3 strings cortos, estilo etiqueta)\n- body_html (string HTML usando solo <h2>, <p>, <ul><li>, <strong>; sin <h1>; sin markdown; entre 550 y 800 palabras; menciona de forma natural al menos un municipio real de Mallorca)\n- faq (array de hasta 3 objetos {\"question\": \"...\", \"answer\": \"...\"}, respuestas de 1-2 frases, directas)`;\n\nconst userPrompt = `Tema del artículo: ${chosenTopic.topic}\nPalabras clave a incluir de forma natural: ${chosenTopic.keywords}\nDatos de contacto que puedes mencionar si aporta valor: teléfono ${CONFIG.companyPhone}, email ${CONFIG.companyEmail}.\nNo inventes testimonios, cifras de clientes ni premios.`;\n\nreturn [{\n  json: {\n    ...CONFIG,\n    weekNumber,\n    todayIso: now.toISOString().slice(0, 10),\n    chosenImageFile: chosenImage.file,\n    chosenImageAlt: chosenImage.alt,\n    openaiBody: {\n      model: CONFIG.openaiModel,\n      response_format: { type: 'json_object' },\n      temperature: 0.7,\n      messages: [\n        { role: 'system', content: systemPrompt },\n        { role: 'user', content: userPrompt },\n      ],\n    },\n  },\n}];"
+        "jsCode": "// =========================================================================\n// EDIT THIS BLOCK with your own values before turning the workflow on.\n// =========================================================================\nconst CONFIG = {\n  // GitHub repo where the site lives (must already contain website/index.html,\n  // website/blog/index.html and website/sitemap.xml at basePath below)\n  githubOwner: 'hlpzai',\n  githubRepo: 'mallorca-transportes-web',\n  githubBranch: 'main',\n  // '' if index.html/blog/sitemap.xml sit at the repo root, otherwise the\n  // folder prefix, e.g. 'website/' (note the trailing slash)\n  basePath: '',\n\n  siteUrl: 'https://mallorcatransportes.com',\n  companyName: 'Mallorca Transportes',\n  companyPhone: '+34 659 924 515',\n  companyEmail: 'info@mallorcatransportes.com',\n\n  // Any OpenAI chat-completions model that supports response_format json_object\n  openaiModel: 'gpt-4.1',\n};\n\n// -------------------------------------------------------------------------\n// Rotating topic queue. The workflow picks ONE per run based on the ISO\n// week number, so it never repeats until it has cycled through the whole\n// list. Add, remove or reorder rows any time — no other node needs to\n// change. When you run out of ideas, just append more.\n// -------------------------------------------------------------------------\nconst TOPICS = [\n  { topic: 'Mudanzas de estudiantes en Palma: qué necesitas saber', keywords: 'mudanzas estudiantes Palma, mudanza piso compartido Mallorca' },\n  { topic: 'Transporte de electrodomésticos grandes en Mallorca: nevera, lavadora y horno', keywords: 'transporte electrodomésticos Mallorca, transporte nevera Mallorca' },\n  { topic: 'Mudanzas en Sóller y la Serra de Tramuntana: accesos y particularidades', keywords: 'mudanzas Sóller, transporte Serra de Tramuntana' },\n  { topic: 'Cómo transportar un piano de forma segura en Mallorca', keywords: 'transporte de pianos Mallorca, mudanza de piano' },\n  { topic: 'Guardamuebles en Mallorca: cuándo tiene sentido y cómo funciona', keywords: 'guardamuebles Mallorca, trastero mudanza Mallorca' },\n  { topic: 'Mudanzas de última hora en Mallorca: qué esperar y cómo organizarte', keywords: 'mudanza urgente Mallorca, mudanza última hora' },\n  { topic: 'Transporte de obras de arte y antigüedades en Mallorca', keywords: 'transporte de arte Mallorca, transporte antigüedades Mallorca' },\n  { topic: 'Mudanzas de temporada alta en Mallorca: julio y agosto', keywords: 'mudanzas verano Mallorca, mejor época para mudarse Mallorca' },\n  { topic: 'Cómo elegir empresa de mudanzas en Mallorca sin sorpresas', keywords: 'elegir empresa de mudanzas Mallorca, presupuesto mudanza Mallorca' },\n  { topic: 'Mudanzas de negocios de hostelería en Mallorca: bares y restaurantes', keywords: 'mudanza restaurante Mallorca, transporte hostelería Mallorca' },\n  { topic: 'Transporte de maquinaria ligera y herramientas de trabajo en Mallorca', keywords: 'transporte de maquinaria Mallorca, transporte herramientas de trabajo' },\n  { topic: 'Mudanzas en Manacor y la comarca de Llevant', keywords: 'mudanzas Manacor, transporte Llevant Mallorca' },\n  { topic: 'Seguro de transporte en las mudanzas: qué cubre realmente', keywords: 'seguro de mudanza Mallorca, transporte asegurado muebles' },\n  { topic: 'Mudanzas en Inca y el Raiguer: accesos y horarios recomendados', keywords: 'mudanzas Inca, transporte Raiguer Mallorca' },\n  { topic: 'Cómo embalar la vajilla y objetos frágiles para una mudanza', keywords: 'embalar vajilla mudanza, embalaje frágiles Mallorca' },\n  { topic: 'Mudanzas en Alcúdia y Pollença: zonas turísticas y temporada', keywords: 'mudanzas Alcúdia, mudanzas Pollença' },\n  { topic: 'Transporte de gimnasios y equipamiento deportivo en Mallorca', keywords: 'transporte equipamiento deportivo Mallorca, mudanza gimnasio' },\n  { topic: 'Mudanzas en Calvià y la Costa de Ponent: viviendas de temporada', keywords: 'mudanzas Calvià, transporte Costa de Ponent' },\n  { topic: 'Cómo reducir el plástico y el cartón en tu mudanza en Mallorca', keywords: 'mudanza sostenible Mallorca, embalaje ecológico mudanza' },\n  { topic: 'Transporte de mobiliario de jardín y exterior en Mallorca', keywords: 'transporte muebles de jardín Mallorca, mudanza mobiliario exterior' },\n  { topic: 'Mudanzas en Llucmajor y Campos: zona sur de Mallorca', keywords: 'mudanzas Llucmajor, mudanzas Campos Mallorca' },\n  { topic: 'Qué hacer si tu mudanza en Mallorca coincide con obras o reforma', keywords: 'mudanza y reforma a la vez Mallorca, coordinar mudanza obra' },\n  { topic: 'Transporte de bicicletas y equipamiento náutico en Mallorca', keywords: 'transporte de bicicletas Mallorca, transporte equipo náutico' },\n  { topic: 'Mudanzas en Felanitx y Migjorn: qué tener en cuenta', keywords: 'mudanzas Felanitx, transporte Migjorn Mallorca' },\n];\n\n// -------------------------------------------------------------------------\n// Rotating hero-image pool (reuses real photos already on the site so every\n// post looks on-brand — no image generation needed).\n// -------------------------------------------------------------------------\nconst IMAGES = [\n  { file: 'trabajo-mudanza-01.jpg', alt: 'Mudanza de vivienda con cajas embaladas en Mallorca' },\n  { file: 'trabajo-mudanza-02.jpg', alt: 'Embalaje profesional de electrodomésticos para mudanza en Mallorca' },\n  { file: 'trabajo-mudanza-03.jpg', alt: 'Transporte de muebles protegidos en Mallorca' },\n  { file: 'trabajo-mudanza-04.jpg', alt: 'Desmontaje y embalaje de mobiliario en mudanza de Mallorca' },\n  { file: 'trabajo-mudanza-05.jpg', alt: 'Instalación de mobiliario tras mudanza en Mallorca' },\n  { file: 'trabajo-mudanza-06.jpg', alt: 'Montaje de mobiliario de madera en Mallorca' },\n  { file: 'equipo-mudanzas-mallorca.jpg', alt: 'Equipo de Mallorca Transportes cargando una furgoneta' },\n  { file: 'camion-transporte-mallorca.jpg', alt: 'Camión de Mallorca Transportes para transporte de muebles' },\n];\n\nfunction isoWeekNumber(date) {\n  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));\n  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));\n  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));\n  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);\n}\n\nconst now = new Date();\nconst weekNumber = isoWeekNumber(now);\nconst chosenTopic = TOPICS[weekNumber % TOPICS.length];\nconst chosenImage = IMAGES[weekNumber % IMAGES.length];\n\nconst systemPrompt = `Eres un redactor SEO experto en el sector de mudanzas y transporte en Mallorca, escribiendo para la empresa ${CONFIG.companyName}.\nEscribes en español de España, tono cercano y profesional, sin exagerar ni prometer cosas que no se puedan garantizar.\nOptimizas el contenido tanto para buscadores tradicionales (SEO) como para que motores de IA tipo ChatGPT, Perplexity o Google AI Overviews puedan citarlo con facilidad (GEO): frases claras y autocontenidas, datos concretos, listas, y una sección final de preguntas frecuentes con respuestas directas de 1-2 frases.\nNo inventes datos de la empresa que no se te den (precios exactos, número de empleados, premios, cifras de clientes, testimonios).\nDevuelve SIEMPRE un único objeto JSON válido, sin texto fuera del JSON, con exactamente estas claves:\n- title (string, atractivo y con la palabra clave principal, sin comillas)\n- slug (string, en minúsculas, separado por guiones, sin acentos ni caracteres especiales)\n- meta_description (string, máx. 155 caracteres)\n- tags (array de exactamente 3 strings cortos, estilo etiqueta)\n- body_html (string HTML usando solo <h2>, <p>, <ul><li>, <strong>; sin <h1>; sin markdown; entre 550 y 800 palabras; menciona de forma natural al menos un municipio real de Mallorca)\n- faq (array de hasta 3 objetos {\"question\": \"...\", \"answer\": \"...\"}, respuestas de 1-2 frases, directas)`;\n\nconst userPrompt = `Tema del artículo: ${chosenTopic.topic}\nPalabras clave a incluir de forma natural: ${chosenTopic.keywords}\nDatos de contacto que puedes mencionar si aporta valor: teléfono ${CONFIG.companyPhone}, email ${CONFIG.companyEmail}.\nNo inventes testimonios, cifras de clientes ni premios.`;\n\nreturn [{\n  json: {\n    ...CONFIG,\n    weekNumber,\n    todayIso: now.toISOString().slice(0, 10),\n    chosenImageFile: chosenImage.file,\n    chosenImageAlt: chosenImage.alt,\n    openaiBody: {\n      model: CONFIG.openaiModel,\n      response_format: { type: 'json_object' },\n      temperature: 0.7,\n      messages: [\n        { role: 'system', content: systemPrompt },\n        { role: 'user', content: userPrompt },\n      ],\n    },\n  },\n}];"
       },
       "id": "config-and-pick-topic",
       "name": "Config & Pick Topic",
@@ -102,8 +102,8 @@
       "parameters": {
         "method": "GET",
         "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.blogIndexPath}}?ref={{$json.githubBranch}}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -128,7 +128,7 @@
         300
       ],
       "credentials": {
-        "httpHeaderAuth": {
+        "githubApi": {
           "id": "REPLACE_ME",
           "name": "GitHub API Token"
         }
@@ -152,8 +152,8 @@
       "parameters": {
         "method": "PUT",
         "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.blogIndexPath}}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -181,7 +181,7 @@
         300
       ],
       "credentials": {
-        "httpHeaderAuth": {
+        "githubApi": {
           "id": "REPLACE_ME",
           "name": "GitHub API Token"
         }
@@ -191,8 +191,8 @@
       "parameters": {
         "method": "GET",
         "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.sitemapPath}}?ref={{$json.githubBranch}}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -217,7 +217,7 @@
         300
       ],
       "credentials": {
-        "httpHeaderAuth": {
+        "githubApi": {
           "id": "REPLACE_ME",
           "name": "GitHub API Token"
         }
@@ -241,8 +241,8 @@
       "parameters": {
         "method": "PUT",
         "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.sitemapPath}}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -270,7 +270,7 @@
         300
       ],
       "credentials": {
-        "httpHeaderAuth": {
+        "githubApi": {
           "id": "REPLACE_ME",
           "name": "GitHub API Token"
         }
@@ -280,8 +280,8 @@
       "parameters": {
         "method": "PUT",
         "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.articlePath}}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -309,7 +309,7 @@
         300
       ],
       "credentials": {
-        "httpHeaderAuth": {
+        "githubApi": {
           "id": "REPLACE_ME",
           "name": "GitHub API Token"
         }

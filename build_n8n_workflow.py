@@ -24,12 +24,12 @@ CONFIG_CODE = r"""
 const CONFIG = {
   // GitHub repo where the site lives (must already contain website/index.html,
   // website/blog/index.html and website/sitemap.xml at basePath below)
-  githubOwner: 'YOUR_GITHUB_USERNAME',
-  githubRepo: 'YOUR_REPO_NAME',
+  githubOwner: 'hlpzai',
+  githubRepo: 'mallorca-transportes-web',
   githubBranch: 'main',
   // '' if index.html/blog/sitemap.xml sit at the repo root, otherwise the
   // folder prefix, e.g. 'website/' (note the trailing slash)
-  basePath: 'website/',
+  basePath: '',
 
   siteUrl: 'https://mallorcatransportes.com',
   companyName: 'Mallorca Transportes',
@@ -605,15 +605,15 @@ n5 = add_node(
 X += STEP
 
 GITHUB_HEADERS = [("Accept", "application/vnd.github+json"), ("X-GitHub-Api-Version", "2022-11-28")]
-GH_CRED = {"httpHeaderAuth": {"id": "REPLACE_ME", "name": "GitHub API Token"}}
+GH_CRED = {"githubApi": {"id": "REPLACE_ME", "name": "GitHub API Token"}}
 
 n6 = add_node(
     "GitHub - Get blog index", "n8n-nodes-base.httpRequest", 4.2,
     {
         "method": "GET",
         "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.blogIndexPath}}?ref={{$json.githubBranch}}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
         "sendHeaders": True,
         "headerParameters": http_headers(GITHUB_HEADERS),
         "options": {},
@@ -634,8 +634,8 @@ n8 = add_node(
     {
         "method": "PUT",
         "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.blogIndexPath}}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
         "sendHeaders": True,
         "headerParameters": http_headers(GITHUB_HEADERS),
         "sendBody": True,
@@ -652,8 +652,8 @@ n9 = add_node(
     {
         "method": "GET",
         "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.sitemapPath}}?ref={{$json.githubBranch}}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
         "sendHeaders": True,
         "headerParameters": http_headers(GITHUB_HEADERS),
         "options": {},
@@ -674,8 +674,8 @@ n11 = add_node(
     {
         "method": "PUT",
         "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.sitemapPath}}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
         "sendHeaders": True,
         "headerParameters": http_headers(GITHUB_HEADERS),
         "sendBody": True,
@@ -692,8 +692,8 @@ n12 = add_node(
     {
         "method": "PUT",
         "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.articlePath}}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
         "sendHeaders": True,
         "headerParameters": http_headers(GITHUB_HEADERS),
         "sendBody": True,
