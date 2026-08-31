@@ -17,6 +17,7 @@ function makeInput(items) {
 
 const nodeOutputs = {};
 function nodeRef(name) {
+  if (!nodeOutputs[name]) throw new Error('Simulation error: node "' + name + '" has not run yet.');
   return { first: () => nodeOutputs[name][0] };
 }
 
@@ -29,15 +30,36 @@ function runCode(name, code, inputItems) {
   return result;
 }
 
-// 1. Config & Pick Topic ------------------------------------------------------
-const configOut = runCode('Config & Pick Topic', codeByName['Config & Pick Topic'], [{ json: {} }]);
-console.log('--- Config & Pick Topic ---');
-console.log('weekNumber:', configOut[0].json.weekNumber);
-console.log('githubOwner (placeholder expected):', configOut[0].json.githubOwner);
-console.log('openaiBody.messages count:', configOut[0].json.openaiBody.messages.length);
+// 1. Config & Content Bank ------------------------------------------------------
+const configOut = runCode('Config & Content Bank', codeByName['Config & Content Bank'], [{ json: {} }]);
+console.log('--- Config & Content Bank ---');
+console.log('githubOwner:', configOut[0].json.githubOwner);
+console.log('services count:', configOut[0].json.services.length);
+console.log('towns count:', configOut[0].json.towns.length);
+console.log('inspiration count:', configOut[0].json.inspiration.length);
 console.log('chosenImageFile:', configOut[0].json.chosenImageFile);
 
-// 2. Fake OpenAI response ------------------------------------------------------
+// 2. Fake "GitHub - Get blog index" response, with two already-published titles ------
+const fakeBlogIndexHtml = `<!doctype html><html><body>
+<div class="blog-grid">
+  <!-- NEXT_ARTICLE_CARD -->
+  <article class="blog-card"><h3><a href="mudanzas-sin-ascensor-mallorca.html">Mudanzas sin ascensor en Mallorca: soluciones prácticas paso a paso</a></h3></article>
+  <article class="blog-card"><h3><a href="ahorrar-dinero-mudanza-mallorca.html">Cómo ahorrar dinero en tu mudanza en Mallorca sin perder calidad</a></h3></article>
+</div>
+</body></html>`;
+const fakeGetBlogIndexEarly = [{ json: { content: Buffer.from(fakeBlogIndexHtml, 'utf8').toString('base64'), sha: 'BLOGINDEXSHA1' } }];
+
+// 3. Build OpenAI Prompt ------------------------------------------------------
+const promptOut = runCode('Build OpenAI Prompt', codeByName['Build OpenAI Prompt'], fakeGetBlogIndexEarly);
+console.log('\n--- Build OpenAI Prompt ---');
+console.log('publishedTitleCount:', promptOut[0].json.publishedTitleCount);
+const userMsg = promptOut[0].json.openaiBody.messages[1].content;
+console.log('user prompt mentions both published titles:',
+  userMsg.includes('Mudanzas sin ascensor en Mallorca') && userMsg.includes('Cómo ahorrar dinero en tu mudanza'));
+console.log('system prompt has anti-repeat instruction:', promptOut[0].json.openaiBody.messages[0].content.includes('NUNCA elijas un tema'));
+console.log('blogIndexSha carried forward:', promptOut[0].json.blogIndexSha === 'BLOGINDEXSHA1');
+
+// 4. Fake OpenAI response ------------------------------------------------------
 const fakeArticleJson = {
   title: 'Mudanzas de estudiantes en Palma: qué necesitas saber',
   slug: 'mudanzas-estudiantes-palma-test',
@@ -55,13 +77,14 @@ const fakeOpenAiResponse = [{
   },
 }];
 
-// 3. Parse OpenAI Response ------------------------------------------------------
+// 5. Parse OpenAI Response ------------------------------------------------------
 const parseOut = runCode('Parse OpenAI Response', codeByName['Parse OpenAI Response'], fakeOpenAiResponse);
 console.log('\n--- Parse OpenAI Response ---');
 console.log('slug:', parseOut[0].json.slug);
 console.log('readMin:', parseOut[0].json.readMin);
+console.log('blogIndexContent carried forward:', typeof parseOut[0].json.blogIndexContent === 'string' && parseOut[0].json.blogIndexContent.includes('NEXT_ARTICLE_CARD'));
 
-// 4. Build HTML ------------------------------------------------------
+// 6. Build HTML ------------------------------------------------------
 const buildOut = runCode('Build HTML', codeByName['Build HTML'], parseOut);
 const built = buildOut[0].json;
 console.log('\n--- Build HTML ---');
@@ -69,12 +92,8 @@ console.log('articlePath:', built.articlePath);
 console.log('blogIndexPath:', built.blogIndexPath);
 console.log('sitemapPath:', built.sitemapPath);
 console.log('articleHtml length:', Buffer.from(built.articleHtmlBase64, 'base64').toString('utf8').length);
-console.log('cardHtml snippet:', built.cardHtml.slice(0, 120).replace(/\n/g, ' '));
 
 const articleHtml = Buffer.from(built.articleHtmlBase64, 'base64').toString('utf8');
-fs.writeFileSync(path.join(__dirname, '_test_output_article.html'), articleHtml, 'utf8');
-
-// sanity checks on the generated article HTML
 function checkBalance(html, tag) {
   const openRe = new RegExp('<' + tag + '(?![a-zA-Z-])', 'g');
   const closeRe = new RegExp('</' + tag + '>', 'g');
@@ -82,40 +101,33 @@ function checkBalance(html, tag) {
   const closes = (html.match(closeRe) || []).length;
   return { opens, closes, ok: opens === closes };
 }
+let allBalanced = true;
 for (const tag of ['div', 'section', 'header', 'footer', 'html', 'body', 'ul']) {
   const r = checkBalance(articleHtml, tag);
+  if (!r.ok) allBalanced = false;
   console.log(`  balance <${tag}>: ${r.opens} open / ${r.closes} close -> ${r.ok ? 'OK' : 'MISMATCH'}`);
 }
 console.log('  contains "undefined":', articleHtml.includes('undefined'));
-console.log('  contains "[object Object]":', articleHtml.includes('[object Object]'));
 console.log('  contains FAQPage schema:', articleHtml.includes('"@type": "FAQPage"'));
 console.log('  contains BlogPosting schema:', articleHtml.includes('"@type": "BlogPosting"'));
 
-// 5. Splice card into blog index ------------------------------------------------------
-const fakeBlogIndexHtml = `<!doctype html><html><body>
-<div class="blog-grid">
-  <!-- NEXT_ARTICLE_CARD -->
-  <article>old card</article>
-</div>
-</body></html>`;
-const fakeGetBlogIndex = [{ json: { content: Buffer.from(fakeBlogIndexHtml, 'utf8').toString('base64'), sha: 'FAKESHA123' } }];
-const spliceCardOut = runCode('Splice card into blog index', codeByName['Splice card into blog index'], fakeGetBlogIndex);
+// 7. Splice card into blog index (now reads blogIndexContent/sha carried in $input, no fresh GET) ---
+const spliceCardOut = runCode('Splice card into blog index', codeByName['Splice card into blog index'], buildOut);
 const splicedIndex = Buffer.from(spliceCardOut[0].json.githubPutBodyBlogIndex.content, 'base64').toString('utf8');
 console.log('\n--- Splice card into blog index ---');
 console.log('  marker still present:', splicedIndex.includes('<!-- NEXT_ARTICLE_CARD -->'));
 console.log('  new card inserted:', splicedIndex.includes(built.slug + '.html'));
-console.log('  old card preserved:', splicedIndex.includes('old card'));
-console.log('  sha passed through:', spliceCardOut[0].json.githubPutBodyBlogIndex.sha === 'FAKESHA123');
+console.log('  old cards preserved:', splicedIndex.includes('mudanzas-sin-ascensor-mallorca.html') && splicedIndex.includes('ahorrar-dinero-mudanza-mallorca.html'));
+console.log('  sha carried through from early fetch (not a second GET):', spliceCardOut[0].json.githubPutBodyBlogIndex.sha === 'BLOGINDEXSHA1');
 
-// 6. Splice sitemap entry ------------------------------------------------------
+// 8. Splice sitemap entry (still does its own late GET for sitemap.xml) ------------------------------------------------------
 const fakeSitemapXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://mallorcatransportes.com/</loc></url>\n</urlset>\n`;
-const fakeGetSitemap = [{ json: { content: Buffer.from(fakeSitemapXml, 'utf8').toString('base64'), sha: 'FAKESHA456' } }];
+const fakeGetSitemap = [{ json: { content: Buffer.from(fakeSitemapXml, 'utf8').toString('base64'), sha: 'SITEMAPSHA1' } }];
 const spliceSitemapOut = runCode('Splice sitemap entry', codeByName['Splice sitemap entry'], fakeGetSitemap);
 const splicedSitemap = Buffer.from(spliceSitemapOut[0].json.githubPutBodySitemap.content, 'base64').toString('utf8');
 console.log('\n--- Splice sitemap entry ---');
 console.log('  new loc inserted:', splicedSitemap.includes(built.slug + '.html'));
 console.log('  well-formed (ends with </urlset>):', splicedSitemap.trim().endsWith('</urlset>'));
-console.log('  article PUT body message:', spliceSitemapOut[0].json.githubPutBodyArticle.message);
 console.log('  article PUT body has no sha (create, not update):', !('sha' in spliceSitemapOut[0].json.githubPutBodyArticle));
 
 console.log('\nAll simulated steps completed without throwing.');

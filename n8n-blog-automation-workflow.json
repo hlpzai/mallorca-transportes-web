@@ -24,14 +24,64 @@
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "// =========================================================================\n// EDIT THIS BLOCK with your own values before turning the workflow on.\n// =========================================================================\nconst CONFIG = {\n  // GitHub repo where the site lives (must already contain website/index.html,\n  // website/blog/index.html and website/sitemap.xml at basePath below)\n  githubOwner: 'hlpzai',\n  githubRepo: 'mallorca-transportes-web',\n  githubBranch: 'main',\n  // '' if index.html/blog/sitemap.xml sit at the repo root, otherwise the\n  // folder prefix, e.g. 'website/' (note the trailing slash)\n  basePath: '',\n\n  siteUrl: 'https://mallorcatransportes.com',\n  companyName: 'Mallorca Transportes',\n  companyPhone: '+34 659 924 515',\n  companyEmail: 'info@mallorcatransportes.com',\n\n  // Any OpenAI chat-completions model that supports response_format json_object\n  openaiModel: 'gpt-4.1',\n};\n\n// -------------------------------------------------------------------------\n// Rotating topic queue. The workflow picks ONE per run based on the ISO\n// week number, so it never repeats until it has cycled through the whole\n// list. Add, remove or reorder rows any time — no other node needs to\n// change. When you run out of ideas, just append more.\n// -------------------------------------------------------------------------\nconst TOPICS = [\n  { topic: 'Mudanzas de estudiantes en Palma: qué necesitas saber', keywords: 'mudanzas estudiantes Palma, mudanza piso compartido Mallorca' },\n  { topic: 'Transporte de electrodomésticos grandes en Mallorca: nevera, lavadora y horno', keywords: 'transporte electrodomésticos Mallorca, transporte nevera Mallorca' },\n  { topic: 'Mudanzas en Sóller y la Serra de Tramuntana: accesos y particularidades', keywords: 'mudanzas Sóller, transporte Serra de Tramuntana' },\n  { topic: 'Cómo transportar un piano de forma segura en Mallorca', keywords: 'transporte de pianos Mallorca, mudanza de piano' },\n  { topic: 'Guardamuebles en Mallorca: cuándo tiene sentido y cómo funciona', keywords: 'guardamuebles Mallorca, trastero mudanza Mallorca' },\n  { topic: 'Mudanzas de última hora en Mallorca: qué esperar y cómo organizarte', keywords: 'mudanza urgente Mallorca, mudanza última hora' },\n  { topic: 'Transporte de obras de arte y antigüedades en Mallorca', keywords: 'transporte de arte Mallorca, transporte antigüedades Mallorca' },\n  { topic: 'Mudanzas de temporada alta en Mallorca: julio y agosto', keywords: 'mudanzas verano Mallorca, mejor época para mudarse Mallorca' },\n  { topic: 'Cómo elegir empresa de mudanzas en Mallorca sin sorpresas', keywords: 'elegir empresa de mudanzas Mallorca, presupuesto mudanza Mallorca' },\n  { topic: 'Mudanzas de negocios de hostelería en Mallorca: bares y restaurantes', keywords: 'mudanza restaurante Mallorca, transporte hostelería Mallorca' },\n  { topic: 'Transporte de maquinaria ligera y herramientas de trabajo en Mallorca', keywords: 'transporte de maquinaria Mallorca, transporte herramientas de trabajo' },\n  { topic: 'Mudanzas en Manacor y la comarca de Llevant', keywords: 'mudanzas Manacor, transporte Llevant Mallorca' },\n  { topic: 'Seguro de transporte en las mudanzas: qué cubre realmente', keywords: 'seguro de mudanza Mallorca, transporte asegurado muebles' },\n  { topic: 'Mudanzas en Inca y el Raiguer: accesos y horarios recomendados', keywords: 'mudanzas Inca, transporte Raiguer Mallorca' },\n  { topic: 'Cómo embalar la vajilla y objetos frágiles para una mudanza', keywords: 'embalar vajilla mudanza, embalaje frágiles Mallorca' },\n  { topic: 'Mudanzas en Alcúdia y Pollença: zonas turísticas y temporada', keywords: 'mudanzas Alcúdia, mudanzas Pollença' },\n  { topic: 'Transporte de gimnasios y equipamiento deportivo en Mallorca', keywords: 'transporte equipamiento deportivo Mallorca, mudanza gimnasio' },\n  { topic: 'Mudanzas en Calvià y la Costa de Ponent: viviendas de temporada', keywords: 'mudanzas Calvià, transporte Costa de Ponent' },\n  { topic: 'Cómo reducir el plástico y el cartón en tu mudanza en Mallorca', keywords: 'mudanza sostenible Mallorca, embalaje ecológico mudanza' },\n  { topic: 'Transporte de mobiliario de jardín y exterior en Mallorca', keywords: 'transporte muebles de jardín Mallorca, mudanza mobiliario exterior' },\n  { topic: 'Mudanzas en Llucmajor y Campos: zona sur de Mallorca', keywords: 'mudanzas Llucmajor, mudanzas Campos Mallorca' },\n  { topic: 'Qué hacer si tu mudanza en Mallorca coincide con obras o reforma', keywords: 'mudanza y reforma a la vez Mallorca, coordinar mudanza obra' },\n  { topic: 'Transporte de bicicletas y equipamiento náutico en Mallorca', keywords: 'transporte de bicicletas Mallorca, transporte equipo náutico' },\n  { topic: 'Mudanzas en Felanitx y Migjorn: qué tener en cuenta', keywords: 'mudanzas Felanitx, transporte Migjorn Mallorca' },\n];\n\n// -------------------------------------------------------------------------\n// Rotating hero-image pool (reuses real photos already on the site so every\n// post looks on-brand — no image generation needed).\n// -------------------------------------------------------------------------\nconst IMAGES = [\n  { file: 'trabajo-mudanza-01.jpg', alt: 'Mudanza de vivienda con cajas embaladas en Mallorca' },\n  { file: 'trabajo-mudanza-02.jpg', alt: 'Embalaje profesional de electrodomésticos para mudanza en Mallorca' },\n  { file: 'trabajo-mudanza-03.jpg', alt: 'Transporte de muebles protegidos en Mallorca' },\n  { file: 'trabajo-mudanza-04.jpg', alt: 'Desmontaje y embalaje de mobiliario en mudanza de Mallorca' },\n  { file: 'trabajo-mudanza-05.jpg', alt: 'Instalación de mobiliario tras mudanza en Mallorca' },\n  { file: 'trabajo-mudanza-06.jpg', alt: 'Montaje de mobiliario de madera en Mallorca' },\n  { file: 'equipo-mudanzas-mallorca.jpg', alt: 'Equipo de Mallorca Transportes cargando una furgoneta' },\n  { file: 'camion-transporte-mallorca.jpg', alt: 'Camión de Mallorca Transportes para transporte de muebles' },\n];\n\nfunction isoWeekNumber(date) {\n  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));\n  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));\n  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));\n  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);\n}\n\nconst now = new Date();\nconst weekNumber = isoWeekNumber(now);\nconst chosenTopic = TOPICS[weekNumber % TOPICS.length];\nconst chosenImage = IMAGES[weekNumber % IMAGES.length];\n\nconst systemPrompt = `Eres un redactor SEO experto en el sector de mudanzas y transporte en Mallorca, escribiendo para la empresa ${CONFIG.companyName}.\nEscribes en español de España, tono cercano y profesional, sin exagerar ni prometer cosas que no se puedan garantizar.\nOptimizas el contenido tanto para buscadores tradicionales (SEO) como para que motores de IA tipo ChatGPT, Perplexity o Google AI Overviews puedan citarlo con facilidad (GEO): frases claras y autocontenidas, datos concretos, listas, y una sección final de preguntas frecuentes con respuestas directas de 1-2 frases.\nNo inventes datos de la empresa que no se te den (precios exactos, número de empleados, premios, cifras de clientes, testimonios).\nDevuelve SIEMPRE un único objeto JSON válido, sin texto fuera del JSON, con exactamente estas claves:\n- title (string, atractivo y con la palabra clave principal, sin comillas)\n- slug (string, en minúsculas, separado por guiones, sin acentos ni caracteres especiales)\n- meta_description (string, máx. 155 caracteres)\n- tags (array de exactamente 3 strings cortos, estilo etiqueta)\n- body_html (string HTML usando solo <h2>, <p>, <ul><li>, <strong>; sin <h1>; sin markdown; entre 550 y 800 palabras; menciona de forma natural al menos un municipio real de Mallorca)\n- faq (array de hasta 3 objetos {\"question\": \"...\", \"answer\": \"...\"}, respuestas de 1-2 frases, directas)`;\n\nconst userPrompt = `Tema del artículo: ${chosenTopic.topic}\nPalabras clave a incluir de forma natural: ${chosenTopic.keywords}\nDatos de contacto que puedes mencionar si aporta valor: teléfono ${CONFIG.companyPhone}, email ${CONFIG.companyEmail}.\nNo inventes testimonios, cifras de clientes ni premios.`;\n\nreturn [{\n  json: {\n    ...CONFIG,\n    weekNumber,\n    todayIso: now.toISOString().slice(0, 10),\n    chosenImageFile: chosenImage.file,\n    chosenImageAlt: chosenImage.alt,\n    openaiBody: {\n      model: CONFIG.openaiModel,\n      response_format: { type: 'json_object' },\n      temperature: 0.7,\n      messages: [\n        { role: 'system', content: systemPrompt },\n        { role: 'user', content: userPrompt },\n      ],\n    },\n  },\n}];"
+        "jsCode": "// =========================================================================\n// EDIT THIS BLOCK with your own values before turning the workflow on.\n// =========================================================================\nconst CONFIG = {\n  // GitHub repo where the site lives (must already contain website/index.html,\n  // website/blog/index.html and website/sitemap.xml at basePath below)\n  githubOwner: 'hlpzai',\n  githubRepo: 'mallorca-transportes-web',\n  githubBranch: 'main',\n  // '' if index.html/blog/sitemap.xml sit at the repo root, otherwise the\n  // folder prefix, e.g. 'website/' (note the trailing slash)\n  basePath: '',\n\n  siteUrl: 'https://mallorcatransportes.com',\n  companyName: 'Mallorca Transportes',\n  companyPhone: '+34 659 924 515',\n  companyEmail: 'info@mallorcatransportes.com',\n\n  // Any OpenAI chat-completions model that supports response_format json_object\n  openaiModel: 'gpt-4.1',\n};\n\n// -------------------------------------------------------------------------\n// Real services and coverage area, used to ground the model's topic choice.\n// Keep in sync with the actual site if either list changes.\n// -------------------------------------------------------------------------\nconst SERVICES = [\n  'Mudanzas de hogar',\n  'Mudanzas de empresas y oficinas',\n  'Transporte de muebles y electrodomésticos',\n  'Desmontaje y montaje de muebles',\n  'Mudanzas express',\n  'Transporte entre Islas Baleares (Mallorca, Menorca, Ibiza, Formentera)',\n];\n\nconst TOWNS = [\n  'Palma de Mallorca', 'Calvià', 'Marratxí', 'Llucmajor', 'Inca', 'Manacor',\n  'Sóller', 'Andratx', 'Alcúdia', 'Pollença', 'Felanitx', 'Santa Ponsa',\n  'Sa Pobla', 'Campos', 'Artà',\n];\n\n// -------------------------------------------------------------------------\n// Inspiration only — NOT a fixed rotation any more. The next node passes\n// this to the model together with the list of already-published titles, and\n// explicitly tells it not to limit itself to these examples and to never\n// repeat something already covered. Add more any time.\n// -------------------------------------------------------------------------\nconst INSPIRATION = [\n  { topic: 'Mudanzas de estudiantes en Palma: qué necesitas saber' },\n  { topic: 'Transporte de electrodomésticos grandes en Mallorca: nevera, lavadora y horno' },\n  { topic: 'Mudanzas en Sóller y la Serra de Tramuntana: accesos y particularidades' },\n  { topic: 'Cómo transportar un piano de forma segura en Mallorca' },\n  { topic: 'Guardamuebles en Mallorca: cuándo tiene sentido y cómo funciona' },\n  { topic: 'Mudanzas de última hora en Mallorca: qué esperar y cómo organizarte' },\n  { topic: 'Transporte de obras de arte y antigüedades en Mallorca' },\n  { topic: 'Mudanzas de temporada alta en Mallorca: julio y agosto' },\n  { topic: 'Cómo elegir empresa de mudanzas en Mallorca sin sorpresas' },\n  { topic: 'Mudanzas de negocios de hostelería en Mallorca: bares y restaurantes' },\n  { topic: 'Transporte de maquinaria ligera y herramientas de trabajo en Mallorca' },\n  { topic: 'Mudanzas en Manacor y la comarca de Llevant' },\n  { topic: 'Seguro de transporte en las mudanzas: qué cubre realmente' },\n  { topic: 'Mudanzas en Inca y el Raiguer: accesos y horarios recomendados' },\n  { topic: 'Cómo embalar la vajilla y objetos frágiles para una mudanza' },\n  { topic: 'Mudanzas en Alcúdia y Pollença: zonas turísticas y temporada' },\n  { topic: 'Transporte de gimnasios y equipamiento deportivo en Mallorca' },\n  { topic: 'Mudanzas en Calvià y la Costa de Ponent: viviendas de temporada' },\n  { topic: 'Cómo reducir el plástico y el cartón en tu mudanza en Mallorca' },\n  { topic: 'Transporte de mobiliario de jardín y exterior en Mallorca' },\n  { topic: 'Mudanzas en Llucmajor y Campos: zona sur de Mallorca' },\n  { topic: 'Qué hacer si tu mudanza en Mallorca coincide con obras o reforma' },\n  { topic: 'Transporte de bicicletas y equipamiento náutico en Mallorca' },\n  { topic: 'Mudanzas en Felanitx y Migjorn: qué tener en cuenta' },\n];\n\n// -------------------------------------------------------------------------\n// Rotating hero-image pool (reuses real photos already on the site so every\n// post looks on-brand — no image generation needed). Repeating an image is\n// fine, it's just cosmetic; only the CONTENT must never repeat.\n// -------------------------------------------------------------------------\nconst IMAGES = [\n  { file: 'trabajo-mudanza-01.jpg', alt: 'Mudanza de vivienda con cajas embaladas en Mallorca' },\n  { file: 'trabajo-mudanza-02.jpg', alt: 'Embalaje profesional de electrodomésticos para mudanza en Mallorca' },\n  { file: 'trabajo-mudanza-03.jpg', alt: 'Transporte de muebles protegidos en Mallorca' },\n  { file: 'trabajo-mudanza-04.jpg', alt: 'Desmontaje y embalaje de mobiliario en mudanza de Mallorca' },\n  { file: 'trabajo-mudanza-05.jpg', alt: 'Instalación de mobiliario tras mudanza en Mallorca' },\n  { file: 'trabajo-mudanza-06.jpg', alt: 'Montaje de mobiliario de madera en Mallorca' },\n  { file: 'equipo-mudanzas-mallorca.jpg', alt: 'Equipo de Mallorca Transportes cargando una furgoneta' },\n  { file: 'camion-transporte-mallorca.jpg', alt: 'Camión de Mallorca Transportes para transporte de muebles' },\n];\n\nfunction isoWeekNumber(date) {\n  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));\n  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));\n  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));\n  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);\n}\n\nconst now = new Date();\nconst weekNumber = isoWeekNumber(now);\nconst chosenImage = IMAGES[weekNumber % IMAGES.length];\n\nreturn [{\n  json: {\n    ...CONFIG,\n    weekNumber,\n    todayIso: now.toISOString().slice(0, 10),\n    chosenImageFile: chosenImage.file,\n    chosenImageAlt: chosenImage.alt,\n    services: SERVICES,\n    towns: TOWNS,\n    inspiration: INSPIRATION,\n  },\n}];"
       },
-      "id": "config-and-pick-topic",
-      "name": "Config & Pick Topic",
+      "id": "config-and-content-bank",
+      "name": "Config & Content Bank",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         260,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.basePath}}blog/index.html?ref={{$json.githubBranch}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            },
+            {
+              "name": "X-GitHub-Api-Version",
+              "value": "2022-11-28"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "github---get-blog-index",
+      "name": "GitHub - Get blog index",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        520,
+        300
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "REPLACE_ME",
+          "name": "GitHub API Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const cfg = $('Config & Content Bank').first().json;\nconst getResp = $input.first().json;\n\nconst blogIndexContent = Buffer.from(getResp.content.replace(/\\n/g, ''), 'base64').toString('utf8');\n\n// Pull out every already-published article title straight from the live\n// blog index, so the model has the real, current history — not a snapshot\n// that could drift out of date.\nconst titleMatches = [...blogIndexContent.matchAll(/<h3><a[^>]*>([^<]+)<\\/a><\\/h3>/g)];\nconst publishedTitles = titleMatches.map((m) => m[1].trim());\n\nconst servicesList = cfg.services.map((s) => '- ' + s).join('\\n');\nconst townsList = cfg.towns.join(', ');\nconst inspirationList = cfg.inspiration.map((t) => '- ' + t.topic).join('\\n');\nconst publishedList = publishedTitles.length\n  ? publishedTitles.map((t) => '- ' + t).join('\\n')\n  : '(todavía no hay artículos publicados)';\n\nconst systemPrompt = `Eres un redactor SEO y estratega de contenidos experto en el sector de mudanzas y transporte en Mallorca, escribiendo para la empresa ${cfg.companyName}.\nEscribes en español de España, tono cercano y profesional, sin exagerar ni prometer cosas que no se puedan garantizar.\nOptimizas el contenido tanto para buscadores tradicionales (SEO) como para que motores de IA tipo ChatGPT, Perplexity o Google AI Overviews puedan citarlo con facilidad (GEO): frases claras y autocontenidas, datos concretos, listas, y una sección final de preguntas frecuentes con respuestas directas de 1-2 frases.\nNo inventes datos de la empresa que no se te den (precios exactos, número de empleados, premios, cifras de clientes, testimonios).\n\nAntes de escribir, ELIGE tú mismo el tema del artículo de esta semana, razonando como un estratega SEO: qué suele buscar de verdad alguien que necesita una mudanza o transporte en Mallorca, cruzando los servicios reales de la empresa con los municipios donde opera. Prioriza ángulos específicos con intención de búsqueda clara (una duda concreta, una situación concreta, un municipio concreto) por encima de títulos genéricos.\n\nRegla más importante: NUNCA elijas un tema igual o muy parecido a los que ya están publicados en el blog (lista más abajo). Si las ideas de inspiración ya están cubiertas, combina servicio + municipio + situación real de una forma que todavía no se haya tratado.\n\nDevuelve SIEMPRE un único objeto JSON válido, sin texto fuera del JSON, con exactamente estas claves:\n- title (string, atractivo y con la palabra clave principal, sin comillas)\n- slug (string, en minúsculas, separado por guiones, sin acentos ni caracteres especiales)\n- meta_description (string, máx. 155 caracteres)\n- tags (array de exactamente 3 strings cortos, estilo etiqueta)\n- body_html (string HTML usando solo <h2>, <p>, <ul><li>, <strong>; sin <h1>; sin markdown; entre 550 y 800 palabras; menciona de forma natural al menos un municipio real de Mallorca)\n- faq (array de hasta 3 objetos {\"question\": \"...\", \"answer\": \"...\"}, respuestas de 1-2 frases, directas)`;\n\nconst userPrompt = `Servicios reales de la empresa:\n${servicesList}\n\nMunicipios de Mallorca donde opera:\n${townsList}\n\nIdeas de inspiración (no te limites a esta lista, puedes combinar servicio + municipio + situación libremente):\n${inspirationList}\n\nArtículos YA PUBLICADOS en el blog — no repitas ninguno de estos temas ni nada muy similar:\n${publishedList}\n\nDatos de contacto que puedes mencionar si aporta valor: teléfono ${cfg.companyPhone}, email ${cfg.companyEmail}.\nNo inventes testimonios, cifras de clientes ni premios.`;\n\nreturn [{\n  json: {\n    ...cfg,\n    blogIndexContent,\n    blogIndexSha: getResp.sha,\n    publishedTitleCount: publishedTitles.length,\n    openaiBody: {\n      model: cfg.openaiModel,\n      response_format: { type: 'json_object' },\n      temperature: 0.8,\n      messages: [\n        { role: 'system', content: systemPrompt },\n        { role: 'user', content: userPrompt },\n      ],\n    },\n  },\n}];"
+      },
+      "id": "build-openai-prompt",
+      "name": "Build OpenAI Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
         300
       ]
     },
@@ -60,7 +110,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        520,
+        1040,
         300
       ],
       "credentials": {
@@ -73,14 +123,14 @@
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const item = $input.first().json;\nconst raw = item.choices && item.choices[0] && item.choices[0].message\n  ? item.choices[0].message.content\n  : null;\n\nif (!raw) {\n  throw new Error('La respuesta de OpenAI no trae contenido. Revisa la salida completa del nodo \"OpenAI - Generate Article\".');\n}\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  throw new Error('OpenAI no devolvió un JSON válido: ' + e.message + '\\n\\nContenido recibido (primeros 500 caracteres):\\n' + raw.slice(0, 500));\n}\n\nconst required = ['title', 'slug', 'meta_description', 'tags', 'body_html'];\nfor (const key of required) {\n  if (!parsed[key]) throw new Error('Falta el campo \"' + key + '\" en el JSON devuelto por OpenAI.');\n}\n\nfunction slugify(s) {\n  return s.toString().toLowerCase()\n    .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/[^a-z0-9]+/g, '-')\n    .replace(/(^-+|-+$)/g, '');\n}\n\nconst slug = slugify(parsed.slug || parsed.title);\nconst words = parsed.body_html.replace(/<[^>]+>/g, ' ').split(/\\s+/).filter(Boolean).length;\nconst readMin = Math.max(2, Math.round(words / 200));\n\nconst cfg = $('Config & Pick Topic').first().json;\n\nreturn [{\n  json: {\n    ...cfg,\n    ...parsed,\n    slug,\n    readMin,\n  },\n}];"
+        "jsCode": "const item = $input.first().json;\nconst raw = item.choices && item.choices[0] && item.choices[0].message\n  ? item.choices[0].message.content\n  : null;\n\nif (!raw) {\n  throw new Error('La respuesta de OpenAI no trae contenido. Revisa la salida completa del nodo \"OpenAI - Generate Article\".');\n}\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  throw new Error('OpenAI no devolvió un JSON válido: ' + e.message + '\\n\\nContenido recibido (primeros 500 caracteres):\\n' + raw.slice(0, 500));\n}\n\nconst required = ['title', 'slug', 'meta_description', 'tags', 'body_html'];\nfor (const key of required) {\n  if (!parsed[key]) throw new Error('Falta el campo \"' + key + '\" en el JSON devuelto por OpenAI.');\n}\n\nfunction slugify(s) {\n  return s.toString().toLowerCase()\n    .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')\n    .replace(/[^a-z0-9]+/g, '-')\n    .replace(/(^-+|-+$)/g, '');\n}\n\nconst slug = slugify(parsed.slug || parsed.title);\nconst words = parsed.body_html.replace(/<[^>]+>/g, ' ').split(/\\s+/).filter(Boolean).length;\nconst readMin = Math.max(2, Math.round(words / 200));\n\nconst cfg = $('Build OpenAI Prompt').first().json;\n\nreturn [{\n  json: {\n    ...cfg,\n    ...parsed,\n    slug,\n    readMin,\n  },\n}];"
       },
       "id": "parse-openai-response",
       "name": "Parse OpenAI Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        780,
+        1300,
         300
       ]
     },
@@ -94,57 +144,21 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1040,
+        1560,
         300
       ]
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.blogIndexPath}}?ref={{$json.githubBranch}}",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "githubApi",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Accept",
-              "value": "application/vnd.github+json"
-            },
-            {
-              "name": "X-GitHub-Api-Version",
-              "value": "2022-11-28"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "github---get-blog-index",
-      "name": "GitHub - Get blog index",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        1300,
-        300
-      ],
-      "credentials": {
-        "githubApi": {
-          "id": "REPLACE_ME",
-          "name": "GitHub API Token"
-        }
-      }
-    },
-    {
-      "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const build = $('Build HTML').first().json;\nconst getResp = $input.first().json;\n\nconst marker = '<!-- NEXT_ARTICLE_CARD -->';\nconst currentContent = Buffer.from(getResp.content.replace(/\\n/g, ''), 'base64').toString('utf8');\n\nif (!currentContent.includes(marker)) {\n  throw new Error('No se encontró el marcador \"' + marker + '\" en blog/index.html. Añádelo manualmente una vez, justo dentro de <div class=\"blog-grid\">, y vuelve a ejecutar.');\n}\n\nconst updatedContent = currentContent.replace(marker, marker + build.cardHtml);\n\nreturn [{\n  json: {\n    ...build,\n    githubPutBodyBlogIndex: {\n      message: 'Blog: publica \"' + build.title + '\" (automático)',\n      content: Buffer.from(updatedContent, 'utf8').toString('base64'),\n      sha: getResp.sha,\n      branch: build.githubBranch,\n    },\n  },\n}];"
+        "jsCode": "const build = $input.first().json;\n\nconst marker = '<!-- NEXT_ARTICLE_CARD -->';\nconst currentContent = build.blogIndexContent;\n\nif (!currentContent || !currentContent.includes(marker)) {\n  throw new Error('No se encontró el marcador \"' + marker + '\" en blog/index.html. Añádelo manualmente una vez, justo dentro de <div class=\"blog-grid\">, y vuelve a ejecutar.');\n}\n\nconst updatedContent = currentContent.replace(marker, marker + build.cardHtml);\n\nreturn [{\n  json: {\n    ...build,\n    githubPutBodyBlogIndex: {\n      message: 'Blog: publica \"' + build.title + '\" (automático)',\n      content: Buffer.from(updatedContent, 'utf8').toString('base64'),\n      sha: build.blogIndexSha,\n      branch: build.githubBranch,\n    },\n  },\n}];"
       },
       "id": "splice-card-into-blog-index",
       "name": "Splice card into blog index",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1560,
+        1820,
         300
       ]
     },
@@ -177,7 +191,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1820,
+        2080,
         300
       ],
       "credentials": {
@@ -213,7 +227,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2080,
+        2340,
         300
       ],
       "credentials": {
@@ -233,7 +247,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2340,
+        2600,
         300
       ]
     },
@@ -266,7 +280,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2600,
+        2860,
         300
       ],
       "credentials": {
@@ -305,7 +319,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2860,
+        3120,
         300
       ],
       "credentials": {
@@ -321,7 +335,7 @@
         "url": "https://hooks.slack.com/services/REPLACE/WITH/YOUR_WEBHOOK",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ text: 'Nuevo articulo publicado: ' + $json.title + ' -> ' + $json.siteUrl + '/blog/' + $json.slug + '.html' }) }}",
+        "jsonBody": "={{ JSON.stringify({ text: 'Nuevo articulo publicado: ' + $('Build HTML').first().json.title + ' -> ' + $('Build HTML').first().json.siteUrl + '/blog/' + $('Build HTML').first().json.slug + '.html' }) }}",
         "options": {}
       },
       "id": "notify-optional---configure-and-enable",
@@ -329,7 +343,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3120,
+        3380,
         300
       ],
       "disabled": true
@@ -340,14 +354,36 @@
       "main": [
         [
           {
-            "node": "Config & Pick Topic",
+            "node": "Config & Content Bank",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Config & Pick Topic": {
+    "Config & Content Bank": {
+      "main": [
+        [
+          {
+            "node": "GitHub - Get blog index",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub - Get blog index": {
+      "main": [
+        [
+          {
+            "node": "Build OpenAI Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build OpenAI Prompt": {
       "main": [
         [
           {
@@ -381,17 +417,6 @@
       ]
     },
     "Build HTML": {
-      "main": [
-        [
-          {
-            "node": "GitHub - Get blog index",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "GitHub - Get blog index": {
       "main": [
         [
           {

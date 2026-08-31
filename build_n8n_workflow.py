@@ -41,41 +41,61 @@ const CONFIG = {
 };
 
 // -------------------------------------------------------------------------
-// Rotating topic queue. The workflow picks ONE per run based on the ISO
-// week number, so it never repeats until it has cycled through the whole
-// list. Add, remove or reorder rows any time — no other node needs to
-// change. When you run out of ideas, just append more.
+// Real services and coverage area, used to ground the model's topic choice.
+// Keep in sync with the actual site if either list changes.
 // -------------------------------------------------------------------------
-const TOPICS = [
-  { topic: 'Mudanzas de estudiantes en Palma: qué necesitas saber', keywords: 'mudanzas estudiantes Palma, mudanza piso compartido Mallorca' },
-  { topic: 'Transporte de electrodomésticos grandes en Mallorca: nevera, lavadora y horno', keywords: 'transporte electrodomésticos Mallorca, transporte nevera Mallorca' },
-  { topic: 'Mudanzas en Sóller y la Serra de Tramuntana: accesos y particularidades', keywords: 'mudanzas Sóller, transporte Serra de Tramuntana' },
-  { topic: 'Cómo transportar un piano de forma segura en Mallorca', keywords: 'transporte de pianos Mallorca, mudanza de piano' },
-  { topic: 'Guardamuebles en Mallorca: cuándo tiene sentido y cómo funciona', keywords: 'guardamuebles Mallorca, trastero mudanza Mallorca' },
-  { topic: 'Mudanzas de última hora en Mallorca: qué esperar y cómo organizarte', keywords: 'mudanza urgente Mallorca, mudanza última hora' },
-  { topic: 'Transporte de obras de arte y antigüedades en Mallorca', keywords: 'transporte de arte Mallorca, transporte antigüedades Mallorca' },
-  { topic: 'Mudanzas de temporada alta en Mallorca: julio y agosto', keywords: 'mudanzas verano Mallorca, mejor época para mudarse Mallorca' },
-  { topic: 'Cómo elegir empresa de mudanzas en Mallorca sin sorpresas', keywords: 'elegir empresa de mudanzas Mallorca, presupuesto mudanza Mallorca' },
-  { topic: 'Mudanzas de negocios de hostelería en Mallorca: bares y restaurantes', keywords: 'mudanza restaurante Mallorca, transporte hostelería Mallorca' },
-  { topic: 'Transporte de maquinaria ligera y herramientas de trabajo en Mallorca', keywords: 'transporte de maquinaria Mallorca, transporte herramientas de trabajo' },
-  { topic: 'Mudanzas en Manacor y la comarca de Llevant', keywords: 'mudanzas Manacor, transporte Llevant Mallorca' },
-  { topic: 'Seguro de transporte en las mudanzas: qué cubre realmente', keywords: 'seguro de mudanza Mallorca, transporte asegurado muebles' },
-  { topic: 'Mudanzas en Inca y el Raiguer: accesos y horarios recomendados', keywords: 'mudanzas Inca, transporte Raiguer Mallorca' },
-  { topic: 'Cómo embalar la vajilla y objetos frágiles para una mudanza', keywords: 'embalar vajilla mudanza, embalaje frágiles Mallorca' },
-  { topic: 'Mudanzas en Alcúdia y Pollença: zonas turísticas y temporada', keywords: 'mudanzas Alcúdia, mudanzas Pollença' },
-  { topic: 'Transporte de gimnasios y equipamiento deportivo en Mallorca', keywords: 'transporte equipamiento deportivo Mallorca, mudanza gimnasio' },
-  { topic: 'Mudanzas en Calvià y la Costa de Ponent: viviendas de temporada', keywords: 'mudanzas Calvià, transporte Costa de Ponent' },
-  { topic: 'Cómo reducir el plástico y el cartón en tu mudanza en Mallorca', keywords: 'mudanza sostenible Mallorca, embalaje ecológico mudanza' },
-  { topic: 'Transporte de mobiliario de jardín y exterior en Mallorca', keywords: 'transporte muebles de jardín Mallorca, mudanza mobiliario exterior' },
-  { topic: 'Mudanzas en Llucmajor y Campos: zona sur de Mallorca', keywords: 'mudanzas Llucmajor, mudanzas Campos Mallorca' },
-  { topic: 'Qué hacer si tu mudanza en Mallorca coincide con obras o reforma', keywords: 'mudanza y reforma a la vez Mallorca, coordinar mudanza obra' },
-  { topic: 'Transporte de bicicletas y equipamiento náutico en Mallorca', keywords: 'transporte de bicicletas Mallorca, transporte equipo náutico' },
-  { topic: 'Mudanzas en Felanitx y Migjorn: qué tener en cuenta', keywords: 'mudanzas Felanitx, transporte Migjorn Mallorca' },
+const SERVICES = [
+  'Mudanzas de hogar',
+  'Mudanzas de empresas y oficinas',
+  'Transporte de muebles y electrodomésticos',
+  'Desmontaje y montaje de muebles',
+  'Mudanzas express',
+  'Transporte entre Islas Baleares (Mallorca, Menorca, Ibiza, Formentera)',
+];
+
+const TOWNS = [
+  'Palma de Mallorca', 'Calvià', 'Marratxí', 'Llucmajor', 'Inca', 'Manacor',
+  'Sóller', 'Andratx', 'Alcúdia', 'Pollença', 'Felanitx', 'Santa Ponsa',
+  'Sa Pobla', 'Campos', 'Artà',
+];
+
+// -------------------------------------------------------------------------
+// Inspiration only — NOT a fixed rotation any more. The next node passes
+// this to the model together with the list of already-published titles, and
+// explicitly tells it not to limit itself to these examples and to never
+// repeat something already covered. Add more any time.
+// -------------------------------------------------------------------------
+const INSPIRATION = [
+  { topic: 'Mudanzas de estudiantes en Palma: qué necesitas saber' },
+  { topic: 'Transporte de electrodomésticos grandes en Mallorca: nevera, lavadora y horno' },
+  { topic: 'Mudanzas en Sóller y la Serra de Tramuntana: accesos y particularidades' },
+  { topic: 'Cómo transportar un piano de forma segura en Mallorca' },
+  { topic: 'Guardamuebles en Mallorca: cuándo tiene sentido y cómo funciona' },
+  { topic: 'Mudanzas de última hora en Mallorca: qué esperar y cómo organizarte' },
+  { topic: 'Transporte de obras de arte y antigüedades en Mallorca' },
+  { topic: 'Mudanzas de temporada alta en Mallorca: julio y agosto' },
+  { topic: 'Cómo elegir empresa de mudanzas en Mallorca sin sorpresas' },
+  { topic: 'Mudanzas de negocios de hostelería en Mallorca: bares y restaurantes' },
+  { topic: 'Transporte de maquinaria ligera y herramientas de trabajo en Mallorca' },
+  { topic: 'Mudanzas en Manacor y la comarca de Llevant' },
+  { topic: 'Seguro de transporte en las mudanzas: qué cubre realmente' },
+  { topic: 'Mudanzas en Inca y el Raiguer: accesos y horarios recomendados' },
+  { topic: 'Cómo embalar la vajilla y objetos frágiles para una mudanza' },
+  { topic: 'Mudanzas en Alcúdia y Pollença: zonas turísticas y temporada' },
+  { topic: 'Transporte de gimnasios y equipamiento deportivo en Mallorca' },
+  { topic: 'Mudanzas en Calvià y la Costa de Ponent: viviendas de temporada' },
+  { topic: 'Cómo reducir el plástico y el cartón en tu mudanza en Mallorca' },
+  { topic: 'Transporte de mobiliario de jardín y exterior en Mallorca' },
+  { topic: 'Mudanzas en Llucmajor y Campos: zona sur de Mallorca' },
+  { topic: 'Qué hacer si tu mudanza en Mallorca coincide con obras o reforma' },
+  { topic: 'Transporte de bicicletas y equipamiento náutico en Mallorca' },
+  { topic: 'Mudanzas en Felanitx y Migjorn: qué tener en cuenta' },
 ];
 
 // -------------------------------------------------------------------------
 // Rotating hero-image pool (reuses real photos already on the site so every
-// post looks on-brand — no image generation needed).
+// post looks on-brand — no image generation needed). Repeating an image is
+// fine, it's just cosmetic; only the CONTENT must never repeat.
 // -------------------------------------------------------------------------
 const IMAGES = [
   { file: 'trabajo-mudanza-01.jpg', alt: 'Mudanza de vivienda con cajas embaladas en Mallorca' },
@@ -97,25 +117,7 @@ function isoWeekNumber(date) {
 
 const now = new Date();
 const weekNumber = isoWeekNumber(now);
-const chosenTopic = TOPICS[weekNumber % TOPICS.length];
 const chosenImage = IMAGES[weekNumber % IMAGES.length];
-
-const systemPrompt = `Eres un redactor SEO experto en el sector de mudanzas y transporte en Mallorca, escribiendo para la empresa ${CONFIG.companyName}.
-Escribes en español de España, tono cercano y profesional, sin exagerar ni prometer cosas que no se puedan garantizar.
-Optimizas el contenido tanto para buscadores tradicionales (SEO) como para que motores de IA tipo ChatGPT, Perplexity o Google AI Overviews puedan citarlo con facilidad (GEO): frases claras y autocontenidas, datos concretos, listas, y una sección final de preguntas frecuentes con respuestas directas de 1-2 frases.
-No inventes datos de la empresa que no se te den (precios exactos, número de empleados, premios, cifras de clientes, testimonios).
-Devuelve SIEMPRE un único objeto JSON válido, sin texto fuera del JSON, con exactamente estas claves:
-- title (string, atractivo y con la palabra clave principal, sin comillas)
-- slug (string, en minúsculas, separado por guiones, sin acentos ni caracteres especiales)
-- meta_description (string, máx. 155 caracteres)
-- tags (array de exactamente 3 strings cortos, estilo etiqueta)
-- body_html (string HTML usando solo <h2>, <p>, <ul><li>, <strong>; sin <h1>; sin markdown; entre 550 y 800 palabras; menciona de forma natural al menos un municipio real de Mallorca)
-- faq (array de hasta 3 objetos {"question": "...", "answer": "..."}, respuestas de 1-2 frases, directas)`;
-
-const userPrompt = `Tema del artículo: ${chosenTopic.topic}
-Palabras clave a incluir de forma natural: ${chosenTopic.keywords}
-Datos de contacto que puedes mencionar si aporta valor: teléfono ${CONFIG.companyPhone}, email ${CONFIG.companyEmail}.
-No inventes testimonios, cifras de clientes ni premios.`;
 
 return [{
   json: {
@@ -124,10 +126,74 @@ return [{
     todayIso: now.toISOString().slice(0, 10),
     chosenImageFile: chosenImage.file,
     chosenImageAlt: chosenImage.alt,
+    services: SERVICES,
+    towns: TOWNS,
+    inspiration: INSPIRATION,
+  },
+}];
+""".strip("\n")
+
+BUILD_PROMPT_CODE = r"""
+const cfg = $('Config & Content Bank').first().json;
+const getResp = $input.first().json;
+
+const blogIndexContent = Buffer.from(getResp.content.replace(/\n/g, ''), 'base64').toString('utf8');
+
+// Pull out every already-published article title straight from the live
+// blog index, so the model has the real, current history — not a snapshot
+// that could drift out of date.
+const titleMatches = [...blogIndexContent.matchAll(/<h3><a[^>]*>([^<]+)<\/a><\/h3>/g)];
+const publishedTitles = titleMatches.map((m) => m[1].trim());
+
+const servicesList = cfg.services.map((s) => '- ' + s).join('\n');
+const townsList = cfg.towns.join(', ');
+const inspirationList = cfg.inspiration.map((t) => '- ' + t.topic).join('\n');
+const publishedList = publishedTitles.length
+  ? publishedTitles.map((t) => '- ' + t).join('\n')
+  : '(todavía no hay artículos publicados)';
+
+const systemPrompt = `Eres un redactor SEO y estratega de contenidos experto en el sector de mudanzas y transporte en Mallorca, escribiendo para la empresa ${cfg.companyName}.
+Escribes en español de España, tono cercano y profesional, sin exagerar ni prometer cosas que no se puedan garantizar.
+Optimizas el contenido tanto para buscadores tradicionales (SEO) como para que motores de IA tipo ChatGPT, Perplexity o Google AI Overviews puedan citarlo con facilidad (GEO): frases claras y autocontenidas, datos concretos, listas, y una sección final de preguntas frecuentes con respuestas directas de 1-2 frases.
+No inventes datos de la empresa que no se te den (precios exactos, número de empleados, premios, cifras de clientes, testimonios).
+
+Antes de escribir, ELIGE tú mismo el tema del artículo de esta semana, razonando como un estratega SEO: qué suele buscar de verdad alguien que necesita una mudanza o transporte en Mallorca, cruzando los servicios reales de la empresa con los municipios donde opera. Prioriza ángulos específicos con intención de búsqueda clara (una duda concreta, una situación concreta, un municipio concreto) por encima de títulos genéricos.
+
+Regla más importante: NUNCA elijas un tema igual o muy parecido a los que ya están publicados en el blog (lista más abajo). Si las ideas de inspiración ya están cubiertas, combina servicio + municipio + situación real de una forma que todavía no se haya tratado.
+
+Devuelve SIEMPRE un único objeto JSON válido, sin texto fuera del JSON, con exactamente estas claves:
+- title (string, atractivo y con la palabra clave principal, sin comillas)
+- slug (string, en minúsculas, separado por guiones, sin acentos ni caracteres especiales)
+- meta_description (string, máx. 155 caracteres)
+- tags (array de exactamente 3 strings cortos, estilo etiqueta)
+- body_html (string HTML usando solo <h2>, <p>, <ul><li>, <strong>; sin <h1>; sin markdown; entre 550 y 800 palabras; menciona de forma natural al menos un municipio real de Mallorca)
+- faq (array de hasta 3 objetos {"question": "...", "answer": "..."}, respuestas de 1-2 frases, directas)`;
+
+const userPrompt = `Servicios reales de la empresa:
+${servicesList}
+
+Municipios de Mallorca donde opera:
+${townsList}
+
+Ideas de inspiración (no te limites a esta lista, puedes combinar servicio + municipio + situación libremente):
+${inspirationList}
+
+Artículos YA PUBLICADOS en el blog — no repitas ninguno de estos temas ni nada muy similar:
+${publishedList}
+
+Datos de contacto que puedes mencionar si aporta valor: teléfono ${cfg.companyPhone}, email ${cfg.companyEmail}.
+No inventes testimonios, cifras de clientes ni premios.`;
+
+return [{
+  json: {
+    ...cfg,
+    blogIndexContent,
+    blogIndexSha: getResp.sha,
+    publishedTitleCount: publishedTitles.length,
     openaiBody: {
-      model: CONFIG.openaiModel,
+      model: cfg.openaiModel,
       response_format: { type: 'json_object' },
-      temperature: 0.7,
+      temperature: 0.8,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
@@ -170,7 +236,7 @@ const slug = slugify(parsed.slug || parsed.title);
 const words = parsed.body_html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
 const readMin = Math.max(2, Math.round(words / 200));
 
-const cfg = $('Config & Pick Topic').first().json;
+const cfg = $('Build OpenAI Prompt').first().json;
 
 return [{
   json: {
@@ -456,13 +522,12 @@ return [{
 """.strip("\n")
 
 SPLICE_CARD_CODE = r"""
-const build = $('Build HTML').first().json;
-const getResp = $input.first().json;
+const build = $input.first().json;
 
 const marker = '<!-- NEXT_ARTICLE_CARD -->';
-const currentContent = Buffer.from(getResp.content.replace(/\n/g, ''), 'base64').toString('utf8');
+const currentContent = build.blogIndexContent;
 
-if (!currentContent.includes(marker)) {
+if (!currentContent || !currentContent.includes(marker)) {
   throw new Error('No se encontró el marcador "' + marker + '" en blog/index.html. Añádelo manualmente una vez, justo dentro de <div class="blog-grid">, y vuelve a ejecutar.');
 }
 
@@ -474,7 +539,7 @@ return [{
     githubPutBodyBlogIndex: {
       message: 'Blog: publica "' + build.title + '" (automático)',
       content: Buffer.from(updatedContent, 'utf8').toString('base64'),
-      sha: getResp.sha,
+      sha: build.blogIndexSha,
       branch: build.githubBranch,
     },
   },
@@ -565,13 +630,38 @@ n1 = add_node(
 X += STEP
 
 n2 = add_node(
-    "Config & Pick Topic", "n8n-nodes-base.code", 2,
+    "Config & Content Bank", "n8n-nodes-base.code", 2,
     {"mode": "runOnceForAllItems", "jsCode": CONFIG_CODE},
     [X, 300],
 )
 X += STEP
 
+GITHUB_HEADERS = [("Accept", "application/vnd.github+json"), ("X-GitHub-Api-Version", "2022-11-28")]
+GH_CRED = {"githubApi": {"id": "REPLACE_ME", "name": "GitHub API Token"}}
+
 n3 = add_node(
+    "GitHub - Get blog index", "n8n-nodes-base.httpRequest", 4.2,
+    {
+        "method": "GET",
+        "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.basePath}}blog/index.html?ref={{$json.githubBranch}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": True,
+        "headerParameters": http_headers(GITHUB_HEADERS),
+        "options": {},
+    },
+    [X, 300], credentials=GH_CRED,
+)
+X += STEP
+
+n4 = add_node(
+    "Build OpenAI Prompt", "n8n-nodes-base.code", 2,
+    {"mode": "runOnceForAllItems", "jsCode": BUILD_PROMPT_CODE},
+    [X, 300],
+)
+X += STEP
+
+n5 = add_node(
     "OpenAI - Generate Article", "n8n-nodes-base.httpRequest", 4.2,
     {
         "method": "POST",
@@ -590,46 +680,28 @@ n3 = add_node(
 )
 X += STEP
 
-n4 = add_node(
+n6 = add_node(
     "Parse OpenAI Response", "n8n-nodes-base.code", 2,
     {"mode": "runOnceForAllItems", "jsCode": PARSE_OPENAI_CODE},
     [X, 300],
 )
 X += STEP
 
-n5 = add_node(
+n7 = add_node(
     "Build HTML", "n8n-nodes-base.code", 2,
     {"mode": "runOnceForAllItems", "jsCode": BUILD_HTML_CODE},
     [X, 300],
 )
 X += STEP
 
-GITHUB_HEADERS = [("Accept", "application/vnd.github+json"), ("X-GitHub-Api-Version", "2022-11-28")]
-GH_CRED = {"githubApi": {"id": "REPLACE_ME", "name": "GitHub API Token"}}
-
-n6 = add_node(
-    "GitHub - Get blog index", "n8n-nodes-base.httpRequest", 4.2,
-    {
-        "method": "GET",
-        "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.blogIndexPath}}?ref={{$json.githubBranch}}",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "githubApi",
-        "sendHeaders": True,
-        "headerParameters": http_headers(GITHUB_HEADERS),
-        "options": {},
-    },
-    [X, 300], credentials=GH_CRED,
-)
-X += STEP
-
-n7 = add_node(
+n8 = add_node(
     "Splice card into blog index", "n8n-nodes-base.code", 2,
     {"mode": "runOnceForAllItems", "jsCode": SPLICE_CARD_CODE},
     [X, 300],
 )
 X += STEP
 
-n8 = add_node(
+n9 = add_node(
     "GitHub - Update blog index", "n8n-nodes-base.httpRequest", 4.2,
     {
         "method": "PUT",
@@ -647,7 +719,7 @@ n8 = add_node(
 )
 X += STEP
 
-n9 = add_node(
+n10 = add_node(
     "GitHub - Get sitemap", "n8n-nodes-base.httpRequest", 4.2,
     {
         "method": "GET",
@@ -662,14 +734,14 @@ n9 = add_node(
 )
 X += STEP
 
-n10 = add_node(
+n11 = add_node(
     "Splice sitemap entry", "n8n-nodes-base.code", 2,
     {"mode": "runOnceForAllItems", "jsCode": SPLICE_SITEMAP_CODE},
     [X, 300],
 )
 X += STEP
 
-n11 = add_node(
+n12 = add_node(
     "GitHub - Update sitemap", "n8n-nodes-base.httpRequest", 4.2,
     {
         "method": "PUT",
@@ -687,7 +759,7 @@ n11 = add_node(
 )
 X += STEP
 
-n12 = add_node(
+n13 = add_node(
     "GitHub - Create article file", "n8n-nodes-base.httpRequest", 4.2,
     {
         "method": "PUT",
@@ -705,20 +777,20 @@ n12 = add_node(
 )
 X += STEP
 
-n13 = add_node(
+n14 = add_node(
     "Notify (optional - configure and enable)", "n8n-nodes-base.httpRequest", 4.2,
     {
         "method": "POST",
         "url": "https://hooks.slack.com/services/REPLACE/WITH/YOUR_WEBHOOK",
         "sendBody": True,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ text: 'Nuevo articulo publicado: ' + $json.title + ' -> ' + $json.siteUrl + '/blog/' + $json.slug + '.html' }) }}",
+        "jsonBody": "={{ JSON.stringify({ text: 'Nuevo articulo publicado: ' + $('Build HTML').first().json.title + ' -> ' + $('Build HTML').first().json.siteUrl + '/blog/' + $('Build HTML').first().json.slug + '.html' }) }}",
         "options": {},
     },
     [X, 300], disabled=True,
 )
 
-for a, b in [(n1, n2), (n2, n3), (n3, n4), (n4, n5), (n5, n6), (n6, n7), (n7, n8), (n8, n9), (n9, n10), (n10, n11), (n11, n12), (n12, n13)]:
+for a, b in [(n1, n2), (n2, n3), (n3, n4), (n4, n5), (n5, n6), (n6, n7), (n7, n8), (n8, n9), (n9, n10), (n10, n11), (n11, n12), (n12, n13), (n13, n14)]:
     connect(a, b)
 
 workflow = {
