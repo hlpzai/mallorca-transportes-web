@@ -70,6 +70,7 @@ const fakeArticleJson = {
     { question: '¿Cuánto cuesta una mudanza de estudiante en Palma?', answer: 'Depende del volumen, pero suele ser más económica que una mudanza completa de vivienda.' },
     { question: '¿Puedo mudarme en un fin de semana?', answer: 'Sí, ofrecemos disponibilidad de fin de semana según agenda.' },
   ],
+  image_keywords: 'moving boxes apartment',
 };
 const fakeOpenAiResponse = [{
   json: {
@@ -84,10 +85,41 @@ console.log('slug:', parseOut[0].json.slug);
 console.log('readMin:', parseOut[0].json.readMin);
 console.log('blogIndexContent carried forward:', typeof parseOut[0].json.blogIndexContent === 'string' && parseOut[0].json.blogIndexContent.includes('NEXT_ARTICLE_CARD'));
 
-// 6. Build HTML ------------------------------------------------------
-const buildOut = runCode('Build HTML', codeByName['Build HTML'], parseOut);
+// 6a. Pick Photo — scenario with a real Unsplash result ------------------------------------------------------
+nodeOutputs['Unsplash - Search Photo'] = [{
+  json: {
+    results: [{
+      urls: { regular: 'https://images.unsplash.com/photo-fake-id?w=1600&q=80' },
+      user: { name: 'Jane Doe', links: { html: 'https://unsplash.com/@janedoe' } },
+      links: { download_location: 'https://api.unsplash.com/photos/fake-id/download' },
+    }],
+  },
+}];
+const pickPhotoOut = runCode('Pick Photo', codeByName['Pick Photo'], parseOut);
+console.log('\n--- Pick Photo (with Unsplash result) ---');
+console.log('heroImageUrl:', pickPhotoOut[0].json.heroImageUrl);
+console.log('photographerName:', pickPhotoOut[0].json.photographerName);
+console.log('downloadTrackUrl:', pickPhotoOut[0].json.downloadTrackUrl);
+
+// 6b. Pick Photo — fallback scenario, Unsplash returns nothing ------------------------------------------------------
+nodeOutputs['Unsplash - Search Photo'] = [{ json: { results: [] } }];
+const pickPhotoFallbackOut = runCode('Pick Photo', codeByName['Pick Photo'], parseOut);
+console.log('\n--- Pick Photo (Unsplash empty -> fallback) ---');
+console.log('heroImageUrl is null:', pickPhotoFallbackOut[0].json.heroImageUrl === null);
+console.log('chosenImageFile still present for fallback:', !!pickPhotoFallbackOut[0].json.chosenImageFile);
+
+// 7. Build HTML — using the successful Unsplash pick ------------------------------------------------------
+const buildOut = runCode('Build HTML', codeByName['Build HTML'], pickPhotoOut);
 const built = buildOut[0].json;
 console.log('\n--- Build HTML ---');
+console.log('uses Unsplash image in hero:', Buffer.from(built.articleHtmlBase64, 'base64').toString('utf8').includes('images.unsplash.com'));
+console.log('includes photo credit block:', Buffer.from(built.articleHtmlBase64, 'base64').toString('utf8').includes('photo-credit'));
+
+// Also sanity-check the fallback path renders without throwing and uses the local image
+const buildFallbackOut = runCode('Build HTML', codeByName['Build HTML'], pickPhotoFallbackOut);
+const fallbackHtml = Buffer.from(buildFallbackOut[0].json.articleHtmlBase64, 'base64').toString('utf8');
+console.log('fallback uses local /img/ path:', fallbackHtml.includes('../img/trabajo-mudanza') || fallbackHtml.includes('../img/equipo-mudanzas') || fallbackHtml.includes('../img/camion-transporte'));
+console.log('fallback has no photo-credit block:', !fallbackHtml.includes('photo-credit'));
 console.log('articlePath:', built.articlePath);
 console.log('blogIndexPath:', built.blogIndexPath);
 console.log('sitemapPath:', built.sitemapPath);

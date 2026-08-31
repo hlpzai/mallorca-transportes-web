@@ -167,7 +167,8 @@ Devuelve SIEMPRE un único objeto JSON válido, sin texto fuera del JSON, con ex
 - meta_description (string, máx. 155 caracteres)
 - tags (array de exactamente 3 strings cortos, estilo etiqueta)
 - body_html (string HTML usando solo <h2>, <p>, <ul><li>, <strong>; sin <h1>; sin markdown; entre 550 y 800 palabras; menciona de forma natural al menos un municipio real de Mallorca)
-- faq (array de hasta 3 objetos {"question": "...", "answer": "..."}, respuestas de 1-2 frases, directas)`;
+- faq (array de hasta 3 objetos {"question": "...", "answer": "..."}, respuestas de 1-2 frases, directas)
+- image_keywords (string, en INGLÉS, 2-4 palabras, describe una escena real y fotografiable relacionada con el tema del artículo — para buscar una foto de stock que encaje. Ejemplos: "moving boxes apartment", "office relocation team", "family unpacking new home". Nunca uses el nombre de la empresa ni de un municipio en este campo, solo la escena visual)`;
 
 const userPrompt = `Servicios reales de la empresa:
 ${servicesList}
@@ -268,6 +269,16 @@ function fmtDate(iso) {
 
 const tagRow = (d.tags || []).map((t) => '<span class="tag-pill">' + t + '</span>').join('\n            ');
 
+// Prefer the Unsplash photo picked for this article's topic; fall back to
+// the rotating local pool only if the search failed or returned nothing.
+const usingStockPhoto = Boolean(d.heroImageUrl);
+const finalImageSrc = usingStockPhoto ? d.heroImageUrl : ('../img/' + d.chosenImageFile);
+const finalImageSrcAbsolute = usingStockPhoto ? d.heroImageUrl : (d.siteUrl + '/img/' + d.chosenImageFile);
+const finalImageAlt = usingStockPhoto ? d.heroImageAlt : d.chosenImageAlt;
+const photoCredit = (usingStockPhoto && d.photographerName)
+  ? `<p class="photo-credit">Foto: <a href="${escAttr(d.photographerLink || '#')}" target="_blank" rel="noopener nofollow">${d.photographerName}</a> en <a href="https://unsplash.com" target="_blank" rel="noopener nofollow">Unsplash</a></p>`
+  : '';
+
 const header = `<a class="skip-link" href="#contenido">Saltar al contenido</a>
 
 <header class="site-header" id="top">
@@ -365,7 +376,7 @@ const footer = `<footer class="site-footer">
 `;
 
 const canonical = d.siteUrl + '/blog/' + d.slug + '.html';
-const ogImage = d.siteUrl + '/img/' + d.chosenImageFile;
+const ogImage = finalImageSrcAbsolute;
 
 const faqHtml = (d.faq || []).length
   ? '\n<h2>Preguntas frecuentes</h2>\n' + d.faq.map((f) => '<p><strong>' + f.question + '</strong><br>' + f.answer + '</p>').join('\n')
@@ -459,7 +470,8 @@ ${header}
   </section>
 
   <div class="article-hero">
-    <img src="../img/${d.chosenImageFile}" alt="${escAttr(d.chosenImageAlt)}" width="1600" height="700" fetchpriority="high">
+    <img src="${finalImageSrc}" alt="${escAttr(finalImageAlt)}" width="1600" height="700" fetchpriority="high">
+    ${photoCredit}
   </div>
 
   <section class="section">
@@ -485,7 +497,7 @@ ${footer}`;
 const cardHtml = `
         <article class="blog-card">
           <a href="${d.slug}.html" class="blog-card-image">
-            <img src="../img/${d.chosenImageFile}" alt="${escAttr(d.chosenImageAlt)}" loading="lazy" width="900" height="563">
+            <img src="${finalImageSrc}" alt="${escAttr(finalImageAlt)}" loading="lazy" width="900" height="563">
           </a>
           <div class="blog-card-body">
             <div class="tag-row">
@@ -517,6 +529,38 @@ return [{
     articleHtmlBase64: Buffer.from(articleHtml, 'utf8').toString('base64'),
     cardHtml,
     sitemapEntry,
+  },
+}];
+""".strip("\n")
+
+PICK_PHOTO_CODE = r"""
+const parsed = $input.first().json;
+const searchResp = $('Unsplash - Search Photo').first().json;
+
+const result = searchResp && Array.isArray(searchResp.results) ? searchResp.results[0] : null;
+
+let heroImageUrl = null;
+let heroImageAlt = null;
+let photographerName = null;
+let photographerLink = null;
+let downloadTrackUrl = null;
+
+if (result && result.urls && result.urls.regular) {
+  heroImageUrl = result.urls.regular;
+  heroImageAlt = parsed.title; // Spanish, SEO-relevant alt text, not Unsplash's own (often English/generic)
+  photographerName = result.user && result.user.name ? result.user.name : null;
+  photographerLink = result.user && result.user.links ? result.user.links.html : null;
+  downloadTrackUrl = result.links ? result.links.download_location : null;
+}
+
+return [{
+  json: {
+    ...parsed,
+    heroImageUrl,
+    heroImageAlt,
+    photographerName,
+    photographerLink,
+    downloadTrackUrl,
   },
 }];
 """.strip("\n")
@@ -687,6 +731,47 @@ n6 = add_node(
 )
 X += STEP
 
+n_search_photo = add_node(
+    "Unsplash - Search Photo", "n8n-nodes-base.httpRequest", 4.2,
+    {
+        "method": "GET",
+        "url": "=https://api.unsplash.com/search/photos?query={{encodeURIComponent($json.image_keywords || 'moving boxes')}}&per_page=1&orientation=landscape",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": True,
+        "headerParameters": http_headers([("Accept-Version", "v1")]),
+        "options": {},
+        "onError": "continueRegularOutput",
+    },
+    [X, 300],
+    credentials={"httpHeaderAuth": {"id": "REPLACE_ME", "name": "Unsplash Access Key"}},
+)
+X += STEP
+
+n_pick_photo = add_node(
+    "Pick Photo", "n8n-nodes-base.code", 2,
+    {"mode": "runOnceForAllItems", "jsCode": PICK_PHOTO_CODE},
+    [X, 300],
+)
+X += STEP
+
+n_track_download = add_node(
+    "Unsplash - Track Download", "n8n-nodes-base.httpRequest", 4.2,
+    {
+        "method": "GET",
+        "url": "={{ $json.downloadTrackUrl || 'https://api.unsplash.com' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": True,
+        "headerParameters": http_headers([("Accept-Version", "v1")]),
+        "options": {},
+        "onError": "continueRegularOutput",
+    },
+    [X, 460],
+    credentials={"httpHeaderAuth": {"id": "REPLACE_ME", "name": "Unsplash Access Key"}},
+)
+X += STEP
+
 n7 = add_node(
     "Build HTML", "n8n-nodes-base.code", 2,
     {"mode": "runOnceForAllItems", "jsCode": BUILD_HTML_CODE},
@@ -797,7 +882,12 @@ n14 = add_node(
     [X, 300], disabled=True,
 )
 
-for a, b in [(n1, n2), (n2, n3), (n3, n4), (n4, n5), (n5, n6), (n6, n7), (n7, n8), (n8, n9), (n9, n10), (n10, n11), (n11, n12), (n12, n13), (n13, n14)]:
+for a, b in [
+    (n1, n2), (n2, n3), (n3, n4), (n4, n5), (n5, n6),
+    (n6, n_search_photo), (n_search_photo, n_pick_photo), (n_pick_photo, n7),
+    (n_pick_photo, n_track_download),  # side branch, does not gate the main chain
+    (n7, n8), (n8, n9), (n9, n10), (n10, n11), (n11, n12), (n12, n13), (n13, n14),
+]:
     connect(a, b)
 
 workflow = {
