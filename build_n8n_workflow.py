@@ -723,7 +723,11 @@ n10 = add_node(
     "GitHub - Get sitemap", "n8n-nodes-base.httpRequest", 4.2,
     {
         "method": "GET",
-        "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.sitemapPath}}?ref={{$json.githubBranch}}",
+        # NOTE: this node runs right after a GitHub PUT (an HTTP node), so
+        # $json here is GitHub's PUT response, not our own data — it has no
+        # githubOwner/sitemapPath fields. Reach back explicitly to a node
+        # that still carries them instead of using bare $json.
+        "url": "=https://api.github.com/repos/{{$('Build HTML').first().json.githubOwner}}/{{$('Build HTML').first().json.githubRepo}}/contents/{{$('Build HTML').first().json.sitemapPath}}?ref={{$('Build HTML').first().json.githubBranch}}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "githubApi",
         "sendHeaders": True,
@@ -763,14 +767,17 @@ n13 = add_node(
     "GitHub - Create article file", "n8n-nodes-base.httpRequest", 4.2,
     {
         "method": "PUT",
-        "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.articlePath}}",
+        # Same reasoning as "GitHub - Get sitemap" above: this runs right
+        # after the "GitHub - Update sitemap" PUT, so $json is that PUT's
+        # response, not our data. Reach back to "Splice sitemap entry".
+        "url": "=https://api.github.com/repos/{{$('Splice sitemap entry').first().json.githubOwner}}/{{$('Splice sitemap entry').first().json.githubRepo}}/contents/{{$('Splice sitemap entry').first().json.articlePath}}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "githubApi",
         "sendHeaders": True,
         "headerParameters": http_headers(GITHUB_HEADERS),
         "sendBody": True,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify($json.githubPutBodyArticle) }}",
+        "jsonBody": "={{ JSON.stringify($('Splice sitemap entry').first().json.githubPutBodyArticle) }}",
         "options": {},
     },
     [X, 300], credentials=GH_CRED,

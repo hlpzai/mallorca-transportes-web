@@ -204,7 +204,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.sitemapPath}}?ref={{$json.githubBranch}}",
+        "url": "=https://api.github.com/repos/{{$('Build HTML').first().json.githubOwner}}/{{$('Build HTML').first().json.githubRepo}}/contents/{{$('Build HTML').first().json.sitemapPath}}?ref={{$('Build HTML').first().json.githubBranch}}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "githubApi",
         "sendHeaders": true,
@@ -293,7 +293,7 @@
     {
       "parameters": {
         "method": "PUT",
-        "url": "=https://api.github.com/repos/{{$json.githubOwner}}/{{$json.githubRepo}}/contents/{{$json.articlePath}}",
+        "url": "=https://api.github.com/repos/{{$('Splice sitemap entry').first().json.githubOwner}}/{{$('Splice sitemap entry').first().json.githubRepo}}/contents/{{$('Splice sitemap entry').first().json.articlePath}}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "githubApi",
         "sendHeaders": true,
@@ -311,7 +311,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify($json.githubPutBodyArticle) }}",
+        "jsonBody": "={{ JSON.stringify($('Splice sitemap entry').first().json.githubPutBodyArticle) }}",
         "options": {}
       },
       "id": "github---create-article-file",
