@@ -58,11 +58,8 @@ def header(rel, active="", breadcrumb_html=""):
 
     nav_links = [
         ("Servicios", h("index", "servicios")),
-        ("Cobertura", h("index", "cobertura")),
-        ("Trabajos", h("index", "trabajos")),
         ("Opiniones", h("index", "opiniones")),
         ("Blog", h("blog")),
-        ("FAQ", h("index", "faq")),
         ("Contacto", h("index", "contacto")),
     ]
     nav_html = "\n      ".join('<a href="{}">{}</a>'.format(href, label) for label, href in nav_links)

@@ -289,11 +289,8 @@ const header = `<a class="skip-link" href="#contenido">Saltar al contenido</a>
 
     <nav class="main-nav" id="main-nav" aria-label="Navegación principal">
       <a href="../index.html#servicios">Servicios</a>
-      <a href="../index.html#cobertura">Cobertura</a>
-      <a href="../index.html#trabajos">Trabajos</a>
       <a href="../index.html#opiniones">Opiniones</a>
       <a href="index.html">Blog</a>
-      <a href="../index.html#faq">FAQ</a>
       <a href="../index.html#contacto">Contacto</a>
     </nav>
 
