@@ -17,6 +17,31 @@
     });
   }
 
+  var langSwitch = document.querySelector('.lang-switch');
+  var langToggle = document.getElementById('lang-toggle');
+
+  if (langSwitch && langToggle) {
+    langToggle.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var isOpen = langSwitch.classList.toggle('open');
+      langToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!langSwitch.contains(e.target)) {
+        langSwitch.classList.remove('open');
+        langToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        langSwitch.classList.remove('open');
+        langToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
   var faqItems = document.querySelectorAll('.faq-item');
   faqItems.forEach(function (item) {
     item.addEventListener('toggle', function () {

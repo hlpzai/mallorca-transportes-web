@@ -129,14 +129,30 @@ a { color: inherit; text-decoration: none; }
 .header-actions { display: flex; align-items: center; gap: 10px; }
 .header-call { color: var(--dark); }
 
-.lang-switch {
-  display: flex; align-items: center; gap: 6px;
-  font-size: .78rem; font-weight: 600; letter-spacing: .02em;
-  padding-right: 8px; margin-right: 2px; border-right: 1px solid var(--border);
+.lang-switch { position: relative; }
+.lang-switch-toggle {
+  display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 50%; border: none;
+  background: var(--gray-light); color: var(--dark); cursor: pointer;
+  transition: background-color .15s ease, color .15s ease;
 }
-.lang-switch a, .lang-switch .lang-current { color: var(--dark); opacity: .55; }
-.lang-switch a:hover { opacity: 1; color: var(--orange); }
-.lang-switch .lang-current { opacity: 1; color: var(--orange); }
+.lang-switch-toggle:hover { background: var(--border); }
+.lang-switch-toggle .icon { width: 20px; height: 20px; }
+.lang-switch.open .lang-switch-toggle { background: var(--orange-light); color: var(--orange-dark); }
+
+.lang-switch-menu {
+  display: none; position: absolute; top: calc(100% + 10px); right: 0; z-index: 110;
+  background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg); padding: 6px; min-width: 140px;
+  flex-direction: column; gap: 2px;
+}
+.lang-switch.open .lang-switch-menu { display: flex; }
+.lang-option {
+  display: block; padding: 9px 12px; border-radius: 6px;
+  font-size: .9rem; font-weight: 600; color: var(--dark); white-space: nowrap;
+}
+a.lang-option:hover { background: var(--gray-light); color: var(--orange); }
+.lang-option-current { color: var(--orange); background: var(--orange-light); }
 
 .nav-toggle {
   display: none;
@@ -428,7 +444,6 @@ a { color: inherit; text-decoration: none; }
   .header-call, .header-actions .btn-primary { display: none; }
   .header-inner { height: 68px; grid-template-columns: auto 1fr; }
   .header-actions { gap: 10px; }
-  .lang-switch { font-size: .78rem; gap: 6px; }
   .hero-content { padding: 100px 20px 70px; }
   .site-header.nav-open .main-nav {
     display: flex; flex-direction: column; position: absolute; top: 68px; left: 0; right: 0;

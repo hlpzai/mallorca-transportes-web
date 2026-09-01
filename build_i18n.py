@@ -19,10 +19,10 @@ WHATSAPP_ICON_BIG = WHATSAPP_ICON.replace('class="icon" ', '')
 CHECK_ICON_LI = None  # check-list bullets are pure CSS, no markup needed
 
 LANG_META = {
-    "es": {"path": "", "locale": "es_ES", "label": "ES"},
-    "en": {"path": "en/", "locale": "en_GB", "label": "EN"},
-    "de": {"path": "de/", "locale": "de_DE", "label": "DE"},
-    "zh": {"path": "zh/", "locale": "zh_CN", "label": "中文"},
+    "es": {"path": "", "locale": "es_ES", "label": "ES", "name": "Español"},
+    "en": {"path": "en/", "locale": "en_GB", "label": "EN", "name": "English"},
+    "de": {"path": "de/", "locale": "de_DE", "label": "DE", "name": "Deutsch"},
+    "zh": {"path": "zh/", "locale": "zh_CN", "label": "中文", "name": "中文"},
 }
 LANG_ORDER = ["es", "en", "de", "zh"]
 
@@ -34,13 +34,17 @@ def wa_url(text):
 
 ARIA = {
     "es": dict(nav="Navegación principal", menu="Abrir menú", prev="Opinión anterior", next="Siguiente opinión",
-               service_link="Pedir presupuesto", whatsapp_float="Contactar por WhatsApp", home_suffix=" - Inicio"),
+               service_link="Pedir presupuesto", whatsapp_float="Contactar por WhatsApp", home_suffix=" - Inicio",
+               lang_switch="Cambiar idioma"),
     "en": dict(nav="Main navigation", menu="Open menu", prev="Previous review", next="Next review",
-               service_link="Get a quote", whatsapp_float="Contact us on WhatsApp", home_suffix=" - Home"),
+               service_link="Get a quote", whatsapp_float="Contact us on WhatsApp", home_suffix=" - Home",
+               lang_switch="Change language"),
     "de": dict(nav="Hauptnavigation", menu="Menü öffnen", prev="Vorherige Bewertung", next="Nächste Bewertung",
-               service_link="Angebot anfordern", whatsapp_float="Über WhatsApp kontaktieren", home_suffix=" - Startseite"),
+               service_link="Angebot anfordern", whatsapp_float="Über WhatsApp kontaktieren", home_suffix=" - Startseite",
+               lang_switch="Sprache ändern"),
     "zh": dict(nav="主导航", menu="打开菜单", prev="上一条评价", next="下一条评价",
-               service_link="获取报价", whatsapp_float="通过WhatsApp联系我们", home_suffix=" - 首页"),
+               service_link="获取报价", whatsapp_float="通过WhatsApp联系我们", home_suffix=" - 首页",
+               lang_switch="更改语言"),
 }
 
 
@@ -561,15 +565,26 @@ def build_head(lang, d, rel):
     )
 
 
+GLOBE_ICON = '<svg class="icon" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2zm7.9 9h-3.2a15.7 15.7 0 0 0-1.2-5.4A8 8 0 0 1 19.9 11zM12 4.1c1 1.5 1.9 3.8 2.2 6.9H9.8c.3-3.1 1.2-5.4 2.2-6.9zM4.1 13h3.2c.2 2 .6 3.8 1.2 5.4A8 8 0 0 1 4.1 13zm3.2-2H4.1a8 8 0 0 1 4.4-5.4A15.7 15.7 0 0 0 7.3 11zM12 19.9c-1-1.5-1.9-3.8-2.2-6.9h4.4c-.3 3.1-1.2 5.4-2.2 6.9zm2.5-1.5c.6-1.6 1-3.4 1.2-5.4h3.2a8 8 0 0 1-4.4 5.4z"/></svg>'
+
+
 def build_lang_switch(lang, rel):
-    links = []
+    items = []
     for l in LANG_ORDER:
         href = rel + LANG_META[l]["path"] if rel else ("./" if l == "es" else LANG_META[l]["path"])
+        name = esc(LANG_META[l]["name"])
         if l == lang:
-            links.append('<span class="lang-current">{}</span>'.format(LANG_META[l]["label"]))
+            items.append('<span class="lang-option lang-option-current" aria-current="true">{}</span>'.format(name))
         else:
-            links.append('<a href="{}">{}</a>'.format(href, LANG_META[l]["label"]))
-    return '<div class="lang-switch">' + "".join(links) + "</div>"
+            items.append('<a href="{}" class="lang-option">{}</a>'.format(href, name))
+    return """<div class="lang-switch">
+        <button type="button" class="lang-switch-toggle" id="lang-toggle" aria-haspopup="true" aria-expanded="false" aria-label="{aria_label}">
+          {globe}
+        </button>
+        <div class="lang-switch-menu" id="lang-menu">
+          {items}
+        </div>
+      </div>""".format(aria_label=esc_attr(ARIA[lang]["lang_switch"]), globe=GLOBE_ICON, items="\n          ".join(items))
 
 
 def build_header(lang, d, rel):
